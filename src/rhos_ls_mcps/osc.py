@@ -26,6 +26,7 @@ import io
 import json
 import logging
 import os
+import sys
 import shlex
 from typing import TYPE_CHECKING, Any, Optional
 
@@ -374,7 +375,7 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
         """
         versions_varg = ["versions", "show", "--format", "json"]
         # Run in this process to later on share the loaded plugins and commands with command runs
-        response, stdout, stderr = self._do_run(mcp_argv + versions_varg)
+        response, stdout, stderr = self._do_run(mcp_argv + versions_varg, redirect=False)
         if response:
             raise ToolError(
                 f"Failed to get API versions ({response}):\n{stdout}\n{stderr}"
@@ -405,8 +406,11 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
         # pass them all on the command line.
         self.parser.set_defaults(**version_defaults)
 
-    def _do_run(self, cmd: list[str]) -> tuple[int, str, str]:
+    def _do_run(self, cmd: list[str], redirect: bool = True) -> tuple[int, str, str]:
         self._clean_stds()
+        if redirect:
+            old_stderr = sys.stderr
+            sys.stderr = self.stderr
         try:
             return_code = super().run(cmd)
         except (SystemExit, Exception) as e:
@@ -416,6 +420,8 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
                 f"Failure running command: {cmd} with code: {return_code} and message: {msg}"
             )
         finally:
+            if redirect:
+                sys.stderr = old_stderr
             stdout = self.stdout.getvalue()
             stderr = self.stderr.getvalue()
             self._clean_stds()
