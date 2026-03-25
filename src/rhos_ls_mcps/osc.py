@@ -275,7 +275,13 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
 
     def configure_logging(self) -> None:
         """Configure logging for the OpenStack shell and cliff app."""
+        root = logging.getLogger()
+        handlers_before = list(root.handlers)
         super().configure_logging()
+        # Remove any handlers cliff added to the root logger
+        for handler in list(root.handlers):
+            if handler not in handlers_before:
+                root.removeHandler(handler)
 
         # We need to change the LOG variable to make sure it uses the right stderr instead of sys.stderr
         console = logging.StreamHandler(self.stderr)
