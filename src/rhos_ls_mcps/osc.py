@@ -318,6 +318,7 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
             for option in arg.option_strings:
                 if option in delete_global_args:
                     arg.type = "fail"
+                    arg.default = None
                     delete_global_args.remove(option)
 
         if delete_global_args:
