@@ -19,18 +19,8 @@ readme = "README.md"
 license = {text = "Apache-2.0"}
 
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
-
-[tool.pdm]
-distribution = true
+requires = ["uv_build>=0.11.16,<0.12"]
+build-backend = "uv_build"
 
 [project.scripts]
 rhos-ls-mcps = "rhos_ls_mcps.main:main"
-
-#[project.scriptspdm.scripts.rhos-ls-mcps]
-#env = { DEBUG = "1" }
-#cmd = "python -m rhos_ls_mcps.main"
-#cmd = ["python", "-m", "rhos_ls_mcps.main"]
-# env = { TYPE = "dev", PORT = "5000" }
-# rhos-ls-mcps = { call = "rhos_ls_mcps.main" }
