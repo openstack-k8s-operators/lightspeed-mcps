@@ -127,7 +127,13 @@ We assume the configuration file has already been created, for example `config.y
 ## From source code
 
 ```bash
-pdm run rhos-ls-mcps
+uv run rhos-ls-mcps
+```
+
+To run with environment variables (e.g. debug mode):
+
+```bash
+DEBUG=1 uv run rhos-ls-mcps
 ```
 
 ## Container Image
