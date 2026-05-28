@@ -15,6 +15,7 @@ do a diff of the allowed commands.
 The accept commands list is generated using the rhros_ls_mcps package itself,
 where the reject and ignore list of commands come from this script.
 """
+
 from importlib.metadata import entry_points
 
 import sys
@@ -28,31 +29,128 @@ from rhos_ls_mcps import osc
 # - export:
 # - cp:
 REJECT_COMMANDS: set[str] = {
-    "create", "delete", "update", "set", "unset", "remove", "add", "abort",
-    "complete", "revoke", "issue", "cleanup", "migrate", "resize", "cleanup",
-    "shelve", "unshelve", "reboot", "restart", "rebuild", "stop", "restore",
-    "import", "failover", "associate", "revert", "run", "save", "shrink",
-    "reset", "del", "onboard", "commit", "unrescue", "adopt", "on", "off",
-    "forcedown", "detach", "edit", "lock", "unlock", "purge", "rerun",
-    "attach", "resume", "start", "pause", "create-from-file", "request-refresh",
-    "rename", "post", "clear", "move", "manage", "enable", "register", "rescue",
-    "deploy", "unpause", "disable", "benchmark metric create", "abandon",
-    "renew", "ssh", "export", "replace", "alarm create", "alarm update",
-    "alarm quota set", "alarm state set", "recover", "cancel", "unhold", "accept",
-    "pull", "exec", "upgrade", "suspend", "disassociate", "undeploy", "grow",
-    "scale", "execute", "grant", "confirm", "kill", "mark", "eject", "op",
-    "verification", "reprocess", "expand", "evacuate", "signed", "axfr",
-    "unregister", "clean", "download", "authorize", "cp", "submit", "stage",
-    "promote", "configure", "inject", "signal", "release",
-
+    "create",
+    "delete",
+    "update",
+    "set",
+    "unset",
+    "remove",
+    "add",
+    "abort",
+    "complete",
+    "revoke",
+    "issue",
+    "cleanup",
+    "migrate",
+    "resize",
+    "cleanup",
+    "shelve",
+    "unshelve",
+    "reboot",
+    "restart",
+    "rebuild",
+    "stop",
+    "restore",
+    "import",
+    "failover",
+    "associate",
+    "revert",
+    "run",
+    "save",
+    "shrink",
+    "reset",
+    "del",
+    "onboard",
+    "commit",
+    "unrescue",
+    "adopt",
+    "on",
+    "off",
+    "forcedown",
+    "detach",
+    "edit",
+    "lock",
+    "unlock",
+    "purge",
+    "rerun",
+    "attach",
+    "resume",
+    "start",
+    "pause",
+    "create-from-file",
+    "request-refresh",
+    "rename",
+    "post",
+    "clear",
+    "move",
+    "manage",
+    "enable",
+    "register",
+    "rescue",
+    "deploy",
+    "unpause",
+    "disable",
+    "benchmark metric create",
+    "abandon",
+    "renew",
+    "ssh",
+    "export",
+    "replace",
+    "alarm create",
+    "alarm update",
+    "alarm quota set",
+    "alarm state set",
+    "recover",
+    "cancel",
+    "unhold",
+    "accept",
+    "pull",
+    "exec",
+    "upgrade",
+    "suspend",
+    "disassociate",
+    "undeploy",
+    "grow",
+    "scale",
+    "execute",
+    "grant",
+    "confirm",
+    "kill",
+    "mark",
+    "eject",
+    "op",
+    "verification",
+    "reprocess",
+    "expand",
+    "evacuate",
+    "signed",
+    "axfr",
+    "unregister",
+    "clean",
+    "download",
+    "authorize",
+    "cp",
+    "submit",
+    "stage",
+    "promote",
+    "configure",
+    "inject",
+    "signal",
+    "release",
     # These are full names
-    "secret_store",  "baremetal_node_inspect", "baremetal_node_service",
-    "baremetal_node_provide", "aggregate_cache_image", "alarm delete",
-    "cached_image_queue", "baremetal_driver_passthru_call",
-    "baremetal_node_passthru_call", "static-action_call",
-    "metric_benchmark measures add", "metric_measures_batch-metrics",
+    "secret_store",
+    "baremetal_node_inspect",
+    "baremetal_node_service",
+    "baremetal_node_provide",
+    "aggregate_cache_image",
+    "alarm delete",
+    "cached_image_queue",
+    "baremetal_driver_passthru_call",
+    "baremetal_node_passthru_call",
+    "static-action_call",
+    "metric_benchmark measures add",
+    "metric_measures_batch-metrics",
     "metric_measures_batch-resources-metrics",
-
     # This sounds intrusive: https://docs.openstack.org/senlin/rocky/user/nodes.html#checking-a-node
     "cluster_node_check",
 }
@@ -60,11 +158,30 @@ REJECT_COMMANDS: set[str] = {
 # These must be full names with the "_" suffix, and they are not really commands but artifacts
 # from the arg parsing mechanism
 IGNORE_COMMANDS: set[str] = {
-    "database_", "infra_optim_", "load_balancer_", "identity_", "neutronclient_",
-    "rca_", "object_store_", "compute_", "container_", "dns_", "key_manager_",
-    "application_catalog_", "congressclient_", "messaging_", "baremetal_", "image_",
-    "volume_", "network_", "clustering_", "metric_", "baremetal-introspection_",
-    "cluster_profile_type_ops_", "workflow_engine_", "data_processing_",
+    "database_",
+    "infra_optim_",
+    "load_balancer_",
+    "identity_",
+    "neutronclient_",
+    "rca_",
+    "object_store_",
+    "compute_",
+    "container_",
+    "dns_",
+    "key_manager_",
+    "application_catalog_",
+    "congressclient_",
+    "messaging_",
+    "baremetal_",
+    "image_",
+    "volume_",
+    "network_",
+    "clustering_",
+    "metric_",
+    "baremetal-introspection_",
+    "cluster_profile_type_ops_",
+    "workflow_engine_",
+    "data_processing_",
     "orchestration_",
 }
 
@@ -92,13 +209,17 @@ def osp_list_commands(verbs: set[str]) -> tuple[list[str], list[str]]:
 
 def get_openstackclient_version() -> str | None:
     import openstackclient
+
     return openstackclient.__version__
+
 
 def main() -> None:
     accept_commands, non_accept_commands = osc.osp_list_commands(osc.ACCEPT_COMMANDS)
     reject_commands, non_reject_commands = osc.osp_list_commands(REJECT_COMMANDS)
 
-    undefined_commands: list[str] = list(set(non_accept_commands).intersection(non_reject_commands) - IGNORE_COMMANDS)
+    undefined_commands: list[str] = list(
+        set(non_accept_commands).intersection(non_reject_commands) - IGNORE_COMMANDS
+    )
 
     result = {
         "undefined_commands": undefined_commands,
@@ -108,6 +229,7 @@ def main() -> None:
         "python_osc_version": get_openstackclient_version(),
     }
     yaml.dump(result, sys.stdout)
+
 
 if __name__ == "__main__":
     main()

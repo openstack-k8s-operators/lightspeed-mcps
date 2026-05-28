@@ -18,7 +18,9 @@ RIGHT_GROUP_MSG = "confirm new commands are in the right group"
 UNDEFINED_COMMANDS_MSG = "check ACCEPT_COMMANDS, REJECT_COMMANDS, and IGNORE_COMMANDS"
 
 
-def show_diff(list_name: str, data_1: list[str], data_2: list[str], change_msg: str) -> None:
+def show_diff(
+    list_name: str, data_1: list[str], data_2: list[str], change_msg: str
+) -> None:
     in_list_1_not_in_list_2 = set(data_1[list_name]) - set(data_2[list_name])
     in_list_2_not_in_list_1 = set(data_2[list_name]) - set(data_1[list_name])
 
@@ -37,7 +39,9 @@ def show_diff(list_name: str, data_1: list[str], data_2: list[str], change_msg: 
 
 def main() -> None:
     if len(sys.argv) != 3:
-        print("Usage: diff-allow-deny.py <allow-deny-list-1.yaml> <allow-deny-list-2.yaml>")
+        print(
+            "Usage: diff-allow-deny.py <allow-deny-list-1.yaml> <allow-deny-list-2.yaml>"
+        )
         sys.exit(1)
 
     file_name_1 = sys.argv[1]
@@ -48,17 +52,23 @@ def main() -> None:
     with open(file_name_2, "r") as f:
         list_2 = yaml.safe_load(f)
 
-    print("Differences between python-openstackclient version "
-          f"{list_1['python_osc_version']} and version {list_2['python_osc_version']}")
+    print(
+        "Differences between python-openstackclient version "
+        f"{list_1['python_osc_version']} and version {list_2['python_osc_version']}"
+    )
     changes = show_diff("allow_commands", list_1, list_2, RIGHT_GROUP_MSG)
     changes |= show_diff("deny_commands", list_1, list_2, RIGHT_GROUP_MSG)
 
-    undefined_changes = show_diff("undefined_commands", list_1, list_2, UNDEFINED_COMMANDS_MSG)
+    undefined_changes = show_diff(
+        "undefined_commands", list_1, list_2, UNDEFINED_COMMANDS_MSG
+    )
     changes |= undefined_changes
     if not undefined_changes and list_2["undefined_commands"]:
-        print("Undefined commands have not changed, but there are undefined commands, "
-              "so ACCEPT_COMMANDS, REJECT_COMMANDS, and IGNORE_COMMANDS need to be "
-              f"revised to include them: {sorted(list_2['undefined_commands'])}")
+        print(
+            "Undefined commands have not changed, but there are undefined commands, "
+            "so ACCEPT_COMMANDS, REJECT_COMMANDS, and IGNORE_COMMANDS need to be "
+            f"revised to include them: {sorted(list_2['undefined_commands'])}"
+        )
         sys.exit(1)
 
     if not changes:

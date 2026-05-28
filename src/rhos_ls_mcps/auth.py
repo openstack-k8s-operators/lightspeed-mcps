@@ -3,7 +3,11 @@ from dataclasses import dataclass
 from pydantic import AnyHttpUrl
 
 from mcp.server.auth.settings import AuthSettings
-from mcp.server.auth.provider import AccessToken, TokenVerifier, OAuthAuthorizationServerProvider
+from mcp.server.auth.provider import (
+    AccessToken,
+    TokenVerifier,
+    OAuthAuthorizationServerProvider,
+)
 from mcp.server.transport_security import TransportSecuritySettings
 
 from rhos_ls_mcps.settings import Settings
@@ -19,11 +23,13 @@ class StaticTokenVerifier(TokenVerifier):
     async def verify_token(self, token: str) -> AccessToken | None:
         if self.token != token:
             return None
-        return AccessToken(token=token,
-                           client_id="",
-                           scopes=self.scopes,
-                           expires_at=None,
-                           resource=None)
+        return AccessToken(
+            token=token,
+            client_id="",
+            scopes=self.scopes,
+            expires_at=None,
+            resource=None,
+        )
 
 
 @dataclass
@@ -41,7 +47,7 @@ def get_auth_settings(config: Settings) -> SecurityConfig:
     """
 
     auth_server_provider = None
-    transport_security=TransportSecuritySettings(
+    transport_security = TransportSecuritySettings(
         enable_dns_rebinding_protection=config.mcp_transport_security.enable_dns_rebinding_protection,
         allowed_hosts=config.mcp_transport_security.allowed_hosts,
         allowed_origins=config.mcp_transport_security.allowed_origins,
@@ -51,8 +57,10 @@ def get_auth_settings(config: Settings) -> SecurityConfig:
             issuer_url=AnyHttpUrl("http://localhost:8080"),
             resource_server_url=AnyHttpUrl("http://localhost:8080"),
         )
-        token_verifier=StaticTokenVerifier(config.mcp_transport_security.token,
-                                           read_only=not config.openstack.allow_write)
+        token_verifier = StaticTokenVerifier(
+            config.mcp_transport_security.token,
+            read_only=not config.openstack.allow_write,
+        )
     else:
         auth = None
         token_verifier = None

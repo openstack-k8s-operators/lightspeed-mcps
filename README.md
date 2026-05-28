@@ -82,7 +82,7 @@ The configuration file has 4 sections:
 - MCP Security
 
 ## General
-- `ip`: IP address the server will bind to. Default `0.0.0.0`.
+- `ip`: IP address the server will bind to. Default `127.0.0.1`.
 - `port`: TCP port the server will bind to. Default `8080`.
 - `debug`: Default `false`.
 - `workers`: Number of different uvicorn workers. Default `1`.

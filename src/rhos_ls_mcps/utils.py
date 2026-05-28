@@ -14,15 +14,16 @@ logger = logging.getLogger(__name__)
 class ProcessPool:
     def __init__(self, pool_size: int):
         self.pool_size = pool_size
-        self.pool = ProcessPoolExecutor(max_workers=pool_size, mp_context=multiprocessing.get_context('fork'))
+        self.pool = ProcessPoolExecutor(
+            max_workers=pool_size, mp_context=multiprocessing.get_context("fork")
+        )
         self.loop = asyncio.get_running_loop()
         # To limit total number of concurrent commands: run_function + run_command
         self.semaphore = asyncio.Semaphore(pool_size)
 
     async def run_function(self, func: Callable[..., Any], *args: Any) -> Any:
         async with self.semaphore:
-            result = await self.loop.run_in_executor(
-                self.pool, func, *args)
+            result = await self.loop.run_in_executor(self.pool, func, *args)
             return result
 
     async def run_command(self, cmd: list[str]) -> tuple[int, str, str]:
@@ -54,9 +55,10 @@ def reject_arguments(user_argv: list[str], reject_args: list[str]) -> None:
             if user_arg.strip().startswith(reject_arg):
                 raise ToolError(f"Global argument {user_arg} is not allowed")
 
+
 def strip_bearer_prefix(header: str) -> str:
     """Auxiliary function that removes the 'Bearer' prefix from OAuth header"""
-    bearer, _, token = header.partition(' ')
+    bearer, _, token = header.partition(" ")
     if bearer.lower() != "bearer":
         return header
 

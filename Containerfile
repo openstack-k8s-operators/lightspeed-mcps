@@ -42,4 +42,4 @@ EXPOSE 8080
 
 USER 1001
 
-ENTRYPOINT ["rhos-ls-mcps"]
+ENTRYPOINT ["rhos-ls-mcps", "--ip", "0.0.0.0"]

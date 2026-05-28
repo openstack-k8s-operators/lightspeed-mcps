@@ -10,6 +10,7 @@ from uuid import uuid4
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class LoggerContext:
     request_id: str = "-"
@@ -44,6 +45,7 @@ def init_logging(config) -> None:
 
 def tool_logger(func: Callable[..., Any]) -> Callable[..., Any]:
     """Logger for MCP tools."""
+
     @wraps(func)
     async def wrapper(*args: Any, **kwargs: Any) -> Any:
         # ctx.request_id is always 2, so it's useless
@@ -64,4 +66,5 @@ def tool_logger(func: Callable[..., Any]) -> Callable[..., Any]:
             logger.error(traceback.format_exc())
             raise
         return result
+
     return wrapper
