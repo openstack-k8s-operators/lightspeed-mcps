@@ -3,7 +3,7 @@ import os
 import yaml
 from typing import Optional
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings
 
 from rhos_ls_mcps import oc_defaults
@@ -40,6 +40,31 @@ class OpenShiftSettings(BaseSettings):
     )
 
 
+class TLSSettings(BaseSettings):
+    ssl_certfile: Optional[str] = Field(
+        default=None, description="Path to SSL certificate file for incoming TLS"
+    )
+    ssl_keyfile: Optional[str] = Field(
+        default=None, description="Path to SSL private key file for incoming TLS"
+    )
+    ssl_keyfile_password: Optional[str] = Field(
+        default=None, description="Password for encrypted SSL key file"
+    )
+    ssl_ca_certs: Optional[str] = Field(
+        default=None,
+        description="Path to CA certs file for client certificate verification (mutual TLS)",
+    )
+
+    @model_validator(mode="after")
+    def check_certfile_required(self) -> "TLSSettings":
+        dependent = [self.ssl_keyfile, self.ssl_keyfile_password, self.ssl_ca_certs]
+        if any(dependent) and not self.ssl_certfile:
+            raise ValueError(
+                "tls.ssl_certfile is required when other tls.ssl_* fields are set"
+            )
+        return self
+
+
 class TransportSecuritySettings(BaseSettings):
     token: Optional[str] = Field(
         default=os.environ.get("MCP_SECURITY_TOKEN"),
@@ -50,7 +75,7 @@ class TransportSecuritySettings(BaseSettings):
     )
     allowed_hosts: list[str] = Field(default=["*:*"], description="Allowed hosts")
     allowed_origins: list[str] = Field(
-        default=["http://*:*"], description="Allowed origins"
+        default=["http://*:*", "https://*:*"], description="Allowed origins"
     )
 
 
@@ -78,6 +103,9 @@ class Settings(BaseSettings):
     )
     mcp_transport_security: TransportSecuritySettings = Field(
         default=TransportSecuritySettings(), description="Transport security settings"
+    )
+    tls: TLSSettings = Field(
+        default=TLSSettings(), description="Incoming TLS settings for the MCP server"
     )
 
 

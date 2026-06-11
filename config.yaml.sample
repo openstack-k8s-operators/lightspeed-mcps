@@ -16,6 +16,13 @@ openshift:
   allow_write: false
   insecure: false
 
+# Incoming TLS settings for the MCP server
+#tls:
+#  ssl_certfile: ./cert.pem
+#  ssl_keyfile: ./key.pem
+#  ssl_keyfile_password: null
+#  ssl_ca_certs: null
+
 mcp_transport_security:
     token: supersecret
     enable_dns_rebinding_protection: false

@@ -6,6 +6,7 @@ Available tools:
 
 import contextlib
 import logging
+import ssl
 
 from mcp.server.fastmcp import FastMCP
 from starlette.applications import Starlette
@@ -108,6 +109,16 @@ def main():
 
     # Pass string instead of an instance to support multiple workers.
     # Pass the factory=True argument to use a function (create_app) instead of a variable.
+    ssl_kwargs = {}
+    if config.tls.ssl_certfile:
+        ssl_kwargs["ssl_certfile"] = config.tls.ssl_certfile
+        ssl_kwargs["ssl_keyfile"] = config.tls.ssl_keyfile
+        if config.tls.ssl_keyfile_password:
+            ssl_kwargs["ssl_keyfile_password"] = config.tls.ssl_keyfile_password
+        if config.tls.ssl_ca_certs:
+            ssl_kwargs["ssl_ca_certs"] = config.tls.ssl_ca_certs
+            ssl_kwargs["ssl_cert_reqs"] = ssl.CERT_REQUIRED
+
     uvicorn.run(
         "rhos_ls_mcps.main:create_app",
         host=config.ip,
@@ -118,6 +129,7 @@ def main():
         access_log=False,
         factory=True,
         log_config=log_config,
+        **ssl_kwargs,
     )
 
 

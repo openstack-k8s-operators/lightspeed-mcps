@@ -97,7 +97,7 @@ These go under the `mcp_transport_security` key:
 - `token`: Token to use for basic authentication. The caller must send this value in request header `Authorization`. For example: `Authorization: Bearer supersecret`. Default `""`.
 - `enable_dns_rebinding_protection`: Enable DNS rebinding protection")
 - `allowed_hosts`: List of allowed hosts. Default `["*:*"]`
-- `allowed_origins`: list of allowed origins. Default `["http://*:*"]`.
+- `allowed_origins`: list of allowed origins. Default `["http://*:*", "https://*:*"]`.
 
 With the exception of the `token` field the rest comes from the [Anthropic MCP SDK](https://github.com/modelcontextprotocol/python-sdk).
 
