@@ -21,7 +21,7 @@ license = {text = "Apache-2.0"}
 [dependency-groups]
 dev = [
     "cliff>=4.14.0",
-    "ruff>=0.15.14",
+    "ruff>=0.15.16",
     "pre-commit>=4.6.0"
 ]
 
