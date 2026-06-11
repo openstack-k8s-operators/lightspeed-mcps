@@ -12,7 +12,7 @@ dependencies = [
     "pydantic>=2.12.5",
     "kubernetes>=35.0.0",
     # To ensure it includes patch https://review.opendev.org/c/openstack/osc-lib/+/975784
-    "python-openstackclient>=9.0.0"
+    "python-openstackclient>=10.1.0"
 ]
 requires-python = ">=3.12,<3.13"
 readme = "README.md"
