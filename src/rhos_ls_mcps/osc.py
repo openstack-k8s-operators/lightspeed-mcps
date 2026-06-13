@@ -166,6 +166,7 @@ async def openstack_cli_mcp_tool(command_str: str, ctx: Context) -> str:
     - `nova list` is now `openstack server list`
 
     DON'T EVER USE commands such as cinder, nova, glance. Use `openstack` instead.
+    THIS IS NOT A SHELL don't use pipes
 
     A complete list of commands is available using the help commands:
     - Global options and supported commands: `openstack --help` or `--help`
