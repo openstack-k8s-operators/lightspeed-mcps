@@ -529,6 +529,30 @@ wheels = [
 ]
 
 [[package]]
+name = "jsonpath-rw"
+version = "1.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "decorator" },
+    { name = "ply" },
+    { name = "six" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/71/7c/45001b1f19af8c4478489fbae4fc657b21c4c669d7a5a036a86882581d85/jsonpath-rw-1.4.0.tar.gz", hash = "sha256:05c471281c45ae113f6103d1268ec7a4831a2e96aa80de45edc89b11fac4fbec", size = 13814, upload-time = "2015-04-19T01:47:15.06Z" }
+
+[[package]]
+name = "jsonpath-rw-ext"
+version = "1.2.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jsonpath-rw" },
+    { name = "pbr" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d5/f0/5d865b2543be45e3ab7a8c2ae8dfa5c3e56cfdd48f19d4455eb02f370386/jsonpath-rw-ext-1.2.2.tar.gz", hash = "sha256:a9e44e803b6d87d135b09d1e5af0db4d4cf97ba62711a80aa51c8c721980a994", size = 20581, upload-time = "2019-07-12T09:51:56.107Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/eb/69/e46a4866c6afa52861bcd9bf8909a4b76fd7ac68b227b2d5673f109f0aa3/jsonpath_rw_ext-1.2.2-py2.py3-none-any.whl", hash = "sha256:0947e018c4e6d46f9d04c56487793c702eb225fa252891aa4ed41a9ca26f3d84", size = 19238, upload-time = "2019-07-12T09:51:53.084Z" },
+]
+
+[[package]]
 name = "jsonpointer"
 version = "3.1.1"
 source = { registry = "https://pypi.org/simple" }
@@ -834,6 +858,21 @@ wheels = [
 ]
 
 [[package]]
+name = "osc-placement"
+version = "4.8.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "keystoneauth1" },
+    { name = "osc-lib" },
+    { name = "oslo-utils" },
+    { name = "pbr" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c5/0d/edc245910116e89e6e04a6a94c1a56ed68aceecee52445feb853966c536b/osc_placement-4.8.0.tar.gz", hash = "sha256:4501fd70623864a46ed9a7348e936fd0100e52e1d2439399386056e9121f8ba2", size = 60049, upload-time = "2026-02-24T14:22:25.233Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/92/d4/175637e9a8d9b68f1beb78d66329589275ebed9d87095249c794bcf69196/osc_placement-4.8.0-py3-none-any.whl", hash = "sha256:350b550feedba24cdc5dd53c8a635dcee2544f65996e8cefe35535da4ba4f963", size = 64924, upload-time = "2026-02-24T14:22:24.302Z" },
+]
+
+[[package]]
 name = "oslo-concurrency"
 version = "7.5.0"
 source = { registry = "https://pypi.org/simple" }
@@ -991,6 +1030,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/9f/4a/0883b8e3802965322523f0b200ecf33d31f10991d0401162f4b23c698b42/platformdirs-4.9.6.tar.gz", hash = "sha256:3bfa75b0ad0db84096ae777218481852c0ebc6c727b3168c1b9e0118e458cf0a", size = 29400, upload-time = "2026-04-09T00:04:10.812Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/75/a6/a0a304dc33b49145b21f4808d763822111e67d1c3a32b524a1baf947b6e1/platformdirs-4.9.6-py3-none-any.whl", hash = "sha256:e61adb1d5e5cb3441b4b7710bea7e4c12250ca49439228cc1021c00dcfac0917", size = 21348, upload-time = "2026-04-09T00:04:09.463Z" },
+]
+
+[[package]]
+name = "ply"
+version = "3.11"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e5/69/882ee5c9d017149285cab114ebeab373308ef0f874fcdac9beb90e0ac4da/ply-3.11.tar.gz", hash = "sha256:00c7c1aaa88358b9c765b6d3000c6eec0ba42abca5351b095321aef446081da3", size = 159130, upload-time = "2018-02-15T19:01:31.097Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a3/58/35da89ee790598a0700ea49b2a66594140f44dec458c07e8e3d4979137fc/ply-3.11-py2.py3-none-any.whl", hash = "sha256:096f9b8350b65ebd2fd1346b12452efe5b9607f7482813ffca50c22722a807ce", size = 49567, upload-time = "2018-02-15T19:01:27.172Z" },
 ]
 
 [[package]]
@@ -1237,6 +1285,26 @@ wheels = [
 ]
 
 [[package]]
+name = "python-cloudkittyclient"
+version = "6.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cliff" },
+    { name = "jsonpath-rw-ext" },
+    { name = "keystoneauth1" },
+    { name = "openstacksdk" },
+    { name = "osc-lib" },
+    { name = "oslo-log" },
+    { name = "oslo-utils" },
+    { name = "pbr" },
+    { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/20/e8/a326ea9ad1750c2030c80131040338aaf51002e25cf9d604d98076175f4e/python_cloudkittyclient-6.1.0.tar.gz", hash = "sha256:df5760f0af9bc5aaf2caa27addd37c46f71c2716e32a61d43c1937318e6ef837", size = 62154, upload-time = "2026-02-24T14:20:49.774Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f9/b8/af29d77a847c21dfe1482ed9c456c68551d3b622481a9914a0ffbb59648d/python_cloudkittyclient-6.1.0-py3-none-any.whl", hash = "sha256:8ca8fa4bf37408d00bd04aa775768440f73d9ad293aeef94a7ceca5c27c45904", size = 85167, upload-time = "2026-02-24T14:20:48.514Z" },
+]
+
+[[package]]
 name = "python-congressclient"
 version = "2.0.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1414,6 +1482,27 @@ wheels = [
 ]
 
 [[package]]
+name = "python-manilaclient"
+version = "6.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "debtcollector" },
+    { name = "keystoneauth1" },
+    { name = "osc-lib" },
+    { name = "oslo-config" },
+    { name = "oslo-log" },
+    { name = "oslo-serialization" },
+    { name = "oslo-utils" },
+    { name = "pbr" },
+    { name = "prettytable" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9b/14/c4a07dd2ab6563b75a2837e54dbf76536917891f06c975c78d83cd13dedd/python_manilaclient-6.1.0.tar.gz", hash = "sha256:5322a7e03c7b1a94471ca6d61e64302681a9edb3af954a51a73420f337a460e4", size = 303391, upload-time = "2026-05-19T09:29:07.186Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/af/6a/fc070d527e0940527b20c33624eb80bbd13c4b8072997797547f56d2dbb9/python_manilaclient-6.1.0-py3-none-any.whl", hash = "sha256:e8db5153330be8e0a7b44a8562fc15383e58e635f0cadb13fb15451e9dda2f0b", size = 411720, upload-time = "2026-05-19T09:29:05.751Z" },
+]
+
+[[package]]
 name = "python-mistralclient"
 version = "6.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1491,6 +1580,21 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b4/d3/187305d38d3ee04e02f58573c32d7698099f77bf1c8647cb3e1127c4903a/python_neutronclient-12.0.0.tar.gz", hash = "sha256:f9ea3631101aa5ab833c26c30d27b48afac70a9333bb66c2fa1fb8072b8f93d6", size = 185697, upload-time = "2026-05-13T09:14:01.506Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e5/5d/1d44bb545eed7d873e1949bd9167c59f3dc29f3b1554a0347ac53f0f9bcc/python_neutronclient-12.0.0-py3-none-any.whl", hash = "sha256:624a735ccd6d1e7405aba08309e058cddf7de7c477195ec31e4752d794a54437", size = 248348, upload-time = "2026-05-13T09:14:00.061Z" },
+]
+
+[[package]]
+name = "python-observabilityclient"
+version = "1.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cliff" },
+    { name = "keystoneauth1" },
+    { name = "osc-lib" },
+    { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/67/a1/dbf152374c3a23d058573670f2b8accdaadb9eaea9253869bf10c38da3f5/python_observabilityclient-1.3.0.tar.gz", hash = "sha256:a79979d72f2a34f21a979c5a8e00d74d4ab3f5641558eb36064c06db16ed6524", size = 39694, upload-time = "2026-02-24T14:23:36.115Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a6/09/1a50690e765b2bb193a48e19dd89169988345345b44855f46038d299beb5/python_observabilityclient-1.3.0-py3-none-any.whl", hash = "sha256:7df4a15b9411d2a37588708311aa05945b58a468d04195ef969079010cfdb16b", size = 38413, upload-time = "2026-02-24T14:23:35.006Z" },
 ]
 
 [[package]]
@@ -1810,6 +1914,21 @@ dev = [
     { name = "pre-commit" },
     { name = "ruff" },
 ]
+osc-plugins = [
+    { name = "aodhclient" },
+    { name = "osc-placement" },
+    { name = "python-barbicanclient" },
+    { name = "python-cloudkittyclient" },
+    { name = "python-designateclient" },
+    { name = "python-glanceclient" },
+    { name = "python-heatclient" },
+    { name = "python-ironic-inspector-client" },
+    { name = "python-ironicclient" },
+    { name = "python-manilaclient" },
+    { name = "python-observabilityclient" },
+    { name = "python-octaviaclient" },
+    { name = "python-watcherclient" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -1826,6 +1945,21 @@ dev = [
     { name = "cliff", specifier = ">=4.14.0" },
     { name = "pre-commit", specifier = ">=4.6.0" },
     { name = "ruff", specifier = ">=0.15.14" },
+]
+osc-plugins = [
+    { name = "aodhclient" },
+    { name = "osc-placement" },
+    { name = "python-barbicanclient" },
+    { name = "python-cloudkittyclient" },
+    { name = "python-designateclient" },
+    { name = "python-glanceclient" },
+    { name = "python-heatclient" },
+    { name = "python-ironic-inspector-client" },
+    { name = "python-ironicclient" },
+    { name = "python-manilaclient" },
+    { name = "python-observabilityclient" },
+    { name = "python-octaviaclient" },
+    { name = "python-watcherclient" },
 ]
 
 [[package]]

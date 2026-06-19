@@ -62,7 +62,7 @@ ACCEPT_COMMANDS: set[str] = {
     "cluster_check", "baremetal_introspection_status", "rca_healthcheck",
     "appcontainer_logs", "appcontainer_quota_default", "metric_status",
     "metric_server_version", "messaging_health", "database_cluster_modules",
-    "class-schema",
+    "class-schema", "alarm_metrics",
 }
 # fmt: on
 
@@ -153,9 +153,46 @@ def _clean_response(response: str) -> str:
     return response.lstrip("\x00")
 
 
+def get_installed_plugins():
+    """List installed OSC plugins
+
+    Return a string with a list of installed OSC plugins in an LLM friendly
+    format. The list ready to be injected into a docstring.
+
+    Return an empty string if there are no OSC plugins.
+    """
+
+    from importlib.metadata import entry_points
+
+    plugin_names = {
+        "metric": "AODH (metrics)",
+        "placement": "Placement",
+        "key_manager": "Barbican (key manager)",
+        "rating": "CloudKitty (rating)",
+        "dns": "Designate (DNS)",
+        "orchestration": "Heat (orchestration)",
+        "baremetal-introsp": "Ironic Inspector (baremetal introspection)",
+        "baremetal": "Ironic (baremetal)",
+        "share": "Manila (shared file systems)",
+        "neutronclient": "Neutron (networking)",
+        "observabilityclient": "Prometheus (observability)",
+        "load_balancer": "Octavia (load balancer)",
+        "infra_optim": "Watcher (infra optimization)",
+    }
+
+    names = [
+        plugin_names.get(ep.name, ep.name)
+        for ep in entry_points(group="openstack.cli.extension")
+    ]
+
+    if names:
+        return "\nInstalled extra plugins:\n- " + "\n- ".join(names)
+    return ""
+
+
 @tool_logger
 async def openstack_cli_mcp_tool(command_str: str, ctx: Context) -> str:
-    """Run an OpenStackClient (OSC) CLI command
+    f"""Run an OpenStackClient (OSC) CLI command
 
     Runs the `openstack` command as if it were run in a terminal.
     No need to provide credentials, they are already present.
@@ -173,13 +210,14 @@ async def openstack_cli_mcp_tool(command_str: str, ctx: Context) -> str:
     - Options for a specific command:
       * `openstack <command> --help`
       * `openstack help <command>`
+    {get_installed_plugins()}
 
     Microversions default to latest version, can use older version with
     appropriate `--os-XXXX-api-version`parameter (eg:
     `--os-identity-api-version 3.26`)
 
     For specific format of the stdout result use
-    `--format {table,csv,json,value,yaml}` (default: is table)
+    `--format {{table,csv,json,value,yaml}}` (default: is table)
 
     Empty lists output depends on the format:
     - CSV: always have a headers line, when there are no elements that's the only line.
@@ -382,7 +420,9 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
         """
         versions_varg = ["versions", "show", "--format", "json"]
         # Run in this process to later on share the loaded plugins and commands with command runs
-        response, stdout, stderr = self._do_run(mcp_argv + versions_varg, redirect=False)
+        response, stdout, stderr = self._do_run(
+            mcp_argv + versions_varg, redirect=False
+        )
         if response:
             raise ToolError(
                 f"Failed to get API versions ({response}):\n{stdout}\n{stderr}"

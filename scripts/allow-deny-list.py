@@ -151,6 +151,11 @@ REJECT_COMMANDS: set[str] = {
     "metric_benchmark measures add",
     "metric_measures_batch-metrics",
     "metric_measures_batch-resources-metrics",
+    "metric_clean-tombstones",
+    "metric_snapshot",
+    "rating_scope_patch",
+    "share_service_ensure_shares",
+    "share_replica_resync",
     # This sounds intrusive: https://docs.openstack.org/senlin/rocky/user/nodes.html#checking-a-node
     "cluster_node_check",
 }
@@ -183,6 +188,11 @@ IGNORE_COMMANDS: set[str] = {
     "workflow_engine_",
     "data_processing_",
     "orchestration_",
+    "observabilityclient_",
+    "placement_",
+    "share_",
+    "alarm_",
+    "rating_",
 }
 
 
