@@ -28,7 +28,7 @@ LABEL com.redhat.component="rhos-ls-mcps" \
       io.k8s.name="rhos-mcps" \
       io.k8s.description="MCP Tools for RHOS-Lightspeed" \
       io.openshift.tags="openstack,lightspeed,mcp" \
-      org.label-schema.vcs-url="https://github.com/openstack-lightspeed/rhos-mcps"
+      org.label-schema.vcs-url="https://github.com/openstack-k8s-operators/lightspeed-mcps"
 
 WORKDIR /app
 
