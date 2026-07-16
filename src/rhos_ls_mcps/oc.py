@@ -75,6 +75,8 @@ async def openshift_cli_mcp_tool(command_str: str, ctx: Context) -> str:
     Runs an `oc` command as if it were run in a terminal.
     No need to provide credentials, they are already passed by the client.
 
+    THIS IS NOT A SHELL don't use pipes
+
     Args:
        command_str: String with the command to run.
     Returns:

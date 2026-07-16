@@ -1,4 +1,8 @@
-FROM registry.access.redhat.com/ubi9/python-312:latest AS builder
+# Use this base image so everything comes from RPM packages (including OSC plugins)
+ARG BUILDER_IMAGE=quay.rdoproject.org/podified-master-centos10/openstack-openstackclient:current-tested
+ARG BASE_IMAGE=quay.rdoproject.org/podified-master-centos10/openstack-openstackclient:current-tested
+
+FROM $BUILDER_IMAGE AS builder
 
 WORKDIR /app
 
@@ -7,7 +11,23 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 # Copy dependency manifests and README first (build backend needs README.md).
 # Dependency layer is reused when only application code changes.
-COPY pyproject.toml uv.lock README.md ./
+COPY --chown=cloud-admin:cloud-admin pyproject.toml uv.lock README.md ./
+
+# Using `--no-install-package` in `uv sync` for these 3 packages only prevents
+# the top level package from installing, not their dependencies, installing
+# incompatible versions of the dependencies.
+RUN echo -e '\n[tool.uv]\nexclude-dependencies = [\n    "openstackclient",\n    "python-openstackclient",\n    "stevedore"\n]' >> pyproject.toml
+
+# This should be safe because uv’s resolver is highly conservative and should
+# keep every existing package pinned to its current locked version.
+# Checked this with `uv lock --dry-run`
+RUN uv lock
+
+# Create the virtual environment enabling system's site-packages (RPM packages
+# from base container) since `uv sync` doesn't support it.
+RUN uv venv --system-site-packages /app/.venv
+
+# Install dependencies but without the packages that come from the base image
 RUN uv sync --frozen --no-dev --no-editable --no-install-project
 
 # Copy application code and install the package into the venv.
@@ -20,7 +40,7 @@ RUN curl -o oc.tar.gz https://mirror.openshift.com/pub/openshift-v4/clients/ocp/
     rm oc.tar.gz
 
 # Final stage: smaller image without uv or build tools.
-FROM registry.access.redhat.com/ubi9/python-312:latest
+FROM $BASE_IMAGE
 
 LABEL com.redhat.component="rhos-ls-mcps" \
       name="openstack-lightspeed/rhos-mcps" \
