@@ -207,7 +207,7 @@ wheels = [
 
 [[package]]
 name = "cliff"
-version = "4.14.0"
+version = "4.15.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "autopage" },
@@ -216,9 +216,9 @@ dependencies = [
     { name = "pyyaml" },
     { name = "stevedore" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c2/3b/f0314dfc0c24b2bce7c6e99ef51fd116babe804e02c8d575ed87a66ac412/cliff-4.14.0.tar.gz", hash = "sha256:66f2fbb0e18c348e44794014cfed92bf6522ef997e0c096df199dad195182f8a", size = 89670, upload-time = "2026-05-13T09:01:11.055Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a5/44/53a224fb1378ac399b0a9a673075b3a7b7dc9a7814b738ebcf35f3a83056/cliff-4.15.0.tar.gz", hash = "sha256:eca699f6b390c755e6ed1816a76cdfc1abf5f5ef7d1cee19f3833667a3a1fe39", size = 89822, upload-time = "2026-07-10T13:08:57.406Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/35/42/72e0e60f60e4857374d2f950e4de7952cc4eea8c7b9e0419d2b662d0313c/cliff-4.14.0-py3-none-any.whl", hash = "sha256:2ca28f61cb7bf0b3b3f3061955b22e07f40a270a8837d1ce0f462f985bf7d77f", size = 86891, upload-time = "2026-05-13T09:01:09.564Z" },
+    { url = "https://files.pythonhosted.org/packages/3e/fa/8515704e802b9f66505801a73dba9897fd3874f4c1eb7667f2de3bae1224/cliff-4.15.0-py3-none-any.whl", hash = "sha256:13b3f82e5748911927f92b2a3decd2dbb669e2e0a13b0fa2fb44dcb352aa52f5", size = 86848, upload-time = "2026-07-10T13:08:56.248Z" },
 ]
 
 [[package]]
@@ -1942,7 +1942,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "cliff", specifier = ">=4.14.0" },
+    { name = "cliff", specifier = ">=4.15.0" },
     { name = "pre-commit", specifier = ">=4.6.0" },
     { name = "ruff", specifier = ">=0.15.14" },
 ]
