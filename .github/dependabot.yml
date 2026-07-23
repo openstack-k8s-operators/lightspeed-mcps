@@ -4,4 +4,27 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "saturday"
+    groups:
+      patch-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+
+      minor-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+    groups:
+      github-actions-all:
+        patterns:
+          - "*"
 
