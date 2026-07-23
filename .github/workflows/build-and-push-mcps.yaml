@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set TAGS for push builds
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
