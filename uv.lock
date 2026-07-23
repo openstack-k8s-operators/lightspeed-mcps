@@ -1337,7 +1337,7 @@ wheels = [
 
 [[package]]
 name = "python-designateclient"
-version = "6.4.0"
+version = "7.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cliff" },
@@ -1351,9 +1351,9 @@ dependencies = [
     { name = "requests" },
     { name = "stevedore" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/83/c1/4365fa9fcff907eeae80e6b5da64336d1f98288c999bfacc9bdbeb4d59f2/python_designateclient-6.4.0.tar.gz", hash = "sha256:bb49cf1a090e01288d93b966643333833e3417040c06f463ffe3c9e66b10ad48", size = 73138, upload-time = "2026-02-24T14:35:12.779Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/92/66/9e39949850a7f086641508805ebeab1553451eabde353e05788288e3e80b/python_designateclient-7.0.0.tar.gz", hash = "sha256:d9a1086e7bf81f4034ca0ec7a243cbd8b344bfb6095e2903c553cc3807d2bed2", size = 75902, upload-time = "2026-07-01T11:50:13.876Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e0/95/ba594de62553b094ddc471f20badcba993f806635d113f8112e86be12e12/python_designateclient-6.4.0-py3-none-any.whl", hash = "sha256:ee9c87a6d5fd5ebe04d2e89650f9994836e2f4795d233e12281a58558e870b05", size = 96287, upload-time = "2026-02-24T14:35:10.906Z" },
+    { url = "https://files.pythonhosted.org/packages/1b/c5/5385cdef7fb130495cb4a8ee1f16496cba32fff48f4c5b2f6aa3fc4837bd/python_designateclient-7.0.0-py3-none-any.whl", hash = "sha256:ab587ffb24f1bab7b5f36339c52ad4694c302c3fdaf54950b79564083ca94f4c", size = 99837, upload-time = "2026-07-01T11:50:12.777Z" },
 ]
 
 [[package]]
