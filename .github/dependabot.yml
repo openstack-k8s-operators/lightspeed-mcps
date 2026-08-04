@@ -28,3 +28,12 @@ updates:
         patterns:
           - "*"
 
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+    groups:
+      pre-commit-all:
+        patterns:
+          - "*"
