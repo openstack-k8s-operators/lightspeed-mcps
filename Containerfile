@@ -54,7 +54,7 @@ WORKDIR /app
 
 # Copy the virtualenv (includes the installed package with --no-editable) and README.
 COPY --from=builder /app/.venv /app/.venv
-COPY --from=builder /app/oc /opt/app-root/bin/
+COPY --from=builder /app/oc /usr/local/bin
 
 ENV PATH="/app/.venv/bin:$PATH"
 

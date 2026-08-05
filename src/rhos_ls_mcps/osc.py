@@ -28,7 +28,7 @@ import logging
 import os
 import sys
 import shlex
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
 if TYPE_CHECKING:
     from cliff import interactive
@@ -267,6 +267,7 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
     """
 
     # Class variables shared by all instances
+    original_ancestor: Callable | None = None
     initialized: bool = False
     # TODO: Figure out why we need to reload everytime otherwise the commands dissapear and we fail
     loaded_plugins: bool = False
@@ -287,6 +288,29 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
         # Our custom command manager blocks commands that are not allowed
         command_manager = MyCommandManager("openstack.cli", stderr=stderr)
         deferred_help = True if deferred_help is None else deferred_help
+
+        ##########
+        # TEMPORARY WORKAROUND FOR osc-lib BUG
+        #
+        # Workwaround is compatible with versions with and without bug.
+        # TODO: Can be removed once container uses version v4.4.0 with commit
+        #       https://github.com/openstack/osc-lib/commit/9054ed5da170945071f6ec960f18537d16b55a4e
+        #       Until then we monkey patch the great-grandparent class here:
+        #       MRO: [MyOpenStackShell, osc_shell.OpenStackShell, osc_lib.shell.OpenStackShell, cliff.app.App, ...]
+        if MyOpenStackShell.original_ancestor is None:
+            great_grandparent = self.__class__.__mro__[3]
+            MyOpenStackShell.original_ancestor = great_grandparent.__init__
+        self.__class__.__mro__[3].__init__ = lambda self, *args, **kwargs: (
+            MyOpenStackShell.original_ancestor(
+                self,
+                stdout=kwargs.pop("stdout", None) or stdout,
+                stderr=kwargs.pop("stderr", None) or stderr,
+                interactive_app_factory=kwargs.pop("interactive_app_factory", None)
+                or interactive_app_factory,
+                *args,
+                **kwargs,
+            )
+        )
 
         super(osc_shell.OpenStackShell, self).__init__(
             description=description,
@@ -440,6 +464,8 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
                     version_info["Service Type"]
                 )
                 version = version_info["Max Microversion"] or version_info["Version"]
+                if not version:
+                    continue
                 # Keystone is weird, it reports 3.14 but doesn't accept it :-(
                 if arg_name in (
                     "os_identity_api_version",
