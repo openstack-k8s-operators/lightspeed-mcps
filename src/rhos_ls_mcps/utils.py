@@ -1,12 +1,12 @@
 import asyncio
-from concurrent.futures import ProcessPoolExecutor
 import logging
 import multiprocessing
 import os
-from typing import Any, Callable
+from collections.abc import Callable
+from concurrent.futures import ProcessPoolExecutor
+from typing import Any
 
 from mcp.server.fastmcp.exceptions import ToolError
-
 
 logger = logging.getLogger(__name__)
 

@@ -1,14 +1,13 @@
 from dataclasses import dataclass
 
-from pydantic import AnyHttpUrl
-
-from mcp.server.auth.settings import AuthSettings
 from mcp.server.auth.provider import (
     AccessToken,
-    TokenVerifier,
     OAuthAuthorizationServerProvider,
+    TokenVerifier,
 )
+from mcp.server.auth.settings import AuthSettings
 from mcp.server.transport_security import TransportSecuritySettings
+from pydantic import AnyHttpUrl
 
 from rhos_ls_mcps.settings import Settings
 

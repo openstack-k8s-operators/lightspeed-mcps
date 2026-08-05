@@ -8,20 +8,15 @@ import contextlib
 import logging
 import ssl
 
+import uvicorn
 from mcp.server.fastmcp import FastMCP
 from starlette.applications import Starlette
 from starlette.middleware.cors import CORSMiddleware
 from starlette.routing import Mount
-import uvicorn
 
 from rhos_ls_mcps import auth as auth_module
-from rhos_ls_mcps import extra_endpoints
-from rhos_ls_mcps import oc
-from rhos_ls_mcps import osc
-from rhos_ls_mcps import settings
+from rhos_ls_mcps import extra_endpoints, oc, osc, settings, utils
 from rhos_ls_mcps import logging as mcp_logging
-from rhos_ls_mcps import utils
-
 
 logger = logging.getLogger(__name__)
 

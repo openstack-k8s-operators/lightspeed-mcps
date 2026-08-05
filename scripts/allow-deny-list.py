@@ -16,13 +16,12 @@ The accept commands list is generated using the rhros_ls_mcps package itself,
 where the reject and ignore list of commands come from this script.
 """
 
+import sys
 from importlib.metadata import entry_points
 
-import sys
 import yaml
 
 from rhos_ls_mcps import osc
-
 
 # TODO: Revisit following verbs:
 # - save: Maybe we can make the resources downloadable using MCP resources?
@@ -43,7 +42,6 @@ REJECT_COMMANDS: set[str] = {
     "cleanup",
     "migrate",
     "resize",
-    "cleanup",
     "shelve",
     "unshelve",
     "reboot",
