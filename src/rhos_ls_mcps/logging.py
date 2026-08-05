@@ -1,12 +1,12 @@
-from contextvars import ContextVar
-from dataclasses import dataclass
-from functools import wraps
 import logging
 import sys
 import traceback
-from typing import Any, Callable
+from collections.abc import Callable
+from contextvars import ContextVar
+from dataclasses import dataclass
+from functools import wraps
+from typing import Any
 from uuid import uuid4
-
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,8 @@ class LoggerContext:
     client_id: str = "-"
 
 
-ctx: ContextVar[str] = ContextVar("ctx", default=LoggerContext())
+ctx: ContextVar[LoggerContext] = ContextVar("ctx")
+ctx.set(LoggerContext())
 
 
 class InjectFilter(logging.Filter):

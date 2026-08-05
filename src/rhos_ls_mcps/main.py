@@ -31,13 +31,13 @@ def initialize(config: settings.Settings) -> tuple[FastMCP | None, FastMCP | Non
 
     # Use stateless_http=True to support multiple workers, otherwise a
     # session can go to a different worker and it will fail.
-    security_kwargs = dict(
-        stateless_http=True,
-        auth_server_provider=security_cfg.auth_server_provider,
-        auth=security_cfg.auth,
-        token_verifier=security_cfg.token_verifier,
-        transport_security=security_cfg.transport_security,
-    )
+    security_kwargs = {
+        "stateless_http": True,
+        "auth_server_provider": security_cfg.auth_server_provider,
+        "auth": security_cfg.auth,
+        "token_verifier": security_cfg.token_verifier,
+        "transport_security": security_cfg.transport_security,
+    }
 
     mcp_osp = None
     mcp_ocp = None
