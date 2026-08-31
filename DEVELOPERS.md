@@ -27,6 +27,7 @@ The `initialize` signature is:
 ```python
 from mcp.server.fastmcp import FastMCP
 
+
 def initialize(mcp_osp: FastMCP, mcp_ocp: FastMCP):
     pass
 ```
