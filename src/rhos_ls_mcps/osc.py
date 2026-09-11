@@ -33,8 +33,8 @@ from typing import TYPE_CHECKING, Any, Callable, Optional
 if TYPE_CHECKING:
     from cliff import interactive
 
-from mcp.server.fastmcp import Context, FastMCP
-from mcp.server.fastmcp.exceptions import ToolError
+from mcp.server.mcpserver import Context, MCPServer
+from mcp.server.mcpserver.exceptions import ToolError
 import openstackclient.shell as osc_shell
 
 from rhos_ls_mcps import settings
@@ -128,7 +128,7 @@ OSC_PARAMS: list[str] = []
 # METHODS AND CLASSES CALLED FROM main.py
 
 
-def initialize(mcp_osp: FastMCP):
+def initialize(mcp_osp: MCPServer):
     global ALLOWED_COMMANDS, OSC_PARAMS
 
     mcp_osp.add_tool(

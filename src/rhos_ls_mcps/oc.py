@@ -1,8 +1,8 @@
 import logging
 import shlex
 
-from mcp.server.fastmcp import Context, FastMCP
-from mcp.server.fastmcp.exceptions import ToolError
+from mcp.server.mcpserver import Context, MCPServer
+from mcp.server.mcpserver.exceptions import ToolError
 
 from rhos_ls_mcps import settings
 from rhos_ls_mcps.logging import tool_logger
@@ -42,7 +42,7 @@ REJECT_GLOBAL_ARGS: list[str] = [
 # METHODS AND CLASSES CALLED FROM main.py
 
 
-def initialize(mcp_ocp: FastMCP):
+def initialize(mcp_ocp: MCPServer):
     global OC_PARAMS, MAX_ALLOW_COMMAND_WORDS, MAX_BLOCK_COMMAND_WORDS
 
     mcp_ocp.add_tool(

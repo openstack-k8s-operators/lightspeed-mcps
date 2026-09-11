@@ -8,7 +8,7 @@ import contextlib
 import logging
 import ssl
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 from starlette.applications import Starlette
 from starlette.middleware.cors import CORSMiddleware
 from starlette.routing import Mount
@@ -26,7 +26,7 @@ from rhos_ls_mcps import utils
 logger = logging.getLogger(__name__)
 
 
-def initialize(config: settings.Settings) -> tuple[FastMCP | None, FastMCP | None]:
+def initialize(config: settings.Settings) -> tuple[MCPServer | None, MCPServer | None]:
     """Initialize logging and the MCP server with the tools."""
     mcp_logging.init_logging(config)
     logger.info("Initializing RHOSO MCP server")
@@ -34,27 +34,21 @@ def initialize(config: settings.Settings) -> tuple[FastMCP | None, FastMCP | Non
 
     security_cfg: auth_module.SecurityConfig = auth_module.get_auth_settings(config)
 
-    # Use stateless_http=True to support multiple workers, otherwise a
-    # session can go to a different worker and it will fail.
     security_kwargs = dict(
-        stateless_http=True,
         auth_server_provider=security_cfg.auth_server_provider,
         auth=security_cfg.auth,
         token_verifier=security_cfg.token_verifier,
-        transport_security=security_cfg.transport_security,
     )
 
     mcp_osp = None
     mcp_ocp = None
 
     if config.openstack.enabled:
-        mcp_osp = FastMCP("rhoso-tools", **security_kwargs)
-        mcp_osp.settings.streamable_http_path = "/"
+        mcp_osp = MCPServer("rhoso-tools", **security_kwargs)
         osc.initialize(mcp_osp)
 
     if config.openshift.enabled:
-        mcp_ocp = FastMCP("ocp-tools", **security_kwargs)
-        mcp_ocp.settings.streamable_http_path = "/"
+        mcp_ocp = MCPServer("ocp-tools", **security_kwargs)
         oc.initialize(mcp_ocp)
 
     if not mcp_osp and not mcp_ocp:
@@ -80,10 +74,21 @@ def create_app():
             yield
 
     routes = []
+    # Use stateless_http=True to support multiple workers, otherwise a
+    # session can go to a different worker and it will fail.
+    transport_kwargs = dict(
+        stateless_http=True,
+        streamable_http_path="/",
+        transport_security=auth_module.get_transport_security(config),
+    )
     if mcp_osp:
-        routes.append(Mount("/openstack", app=mcp_osp.streamable_http_app()))
+        routes.append(
+            Mount("/openstack", app=mcp_osp.streamable_http_app(**transport_kwargs))
+        )
     if mcp_ocp:
-        routes.append(Mount("/openshift", app=mcp_ocp.streamable_http_app()))
+        routes.append(
+            Mount("/openshift", app=mcp_ocp.streamable_http_app(**transport_kwargs))
+        )
 
     routes.extend(extra_endpoints.get_routes())
 

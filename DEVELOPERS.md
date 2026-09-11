@@ -4,9 +4,21 @@
 
 Official MCP documentation is available at [https://modelcontextprotocol.io](https://modelcontextprotocol.io).
 
-The project uses [Anthropic's MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk).
+The project uses the [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk), version 2.x.
 
 We create 2 different MCP routes: `/openstack/` and `/openshift/` and tools should be added to one or the other based on what credentials they need.
+
+## Tests
+
+Run the test suite with the locked dependencies:
+
+```bash
+uv run --locked python -m unittest discover -v
+```
+
+The HTTP tests cover both MCP endpoints with legacy and current protocol requests,
+including authentication, DNS protection, credential forwarding, and tool errors.
+CLI execution is mocked, so these tests do not require a cluster or the `oc` binary.
 
 ## Configuration
 
@@ -25,18 +37,18 @@ In this file we need to create an `initialize` method responsible for initializi
 The `initialize` signature is:
 
 ```python
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
-def initialize(mcp_osp: FastMCP, mcp_ocp: FastMCP):
+def initialize(mcp_osp: MCPServer, mcp_ocp: MCPServer):
     pass
 ```
 
 Adding a tool to the MCP servers is straightforward:
 
 ```python
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
-def initialize(mcp_osp: FastMCP, mcp_ocp: FastMCP):
+def initialize(mcp_osp: MCPServer, mcp_ocp: MCPServer):
     mcp_osp.add_tool(<tool_method_name>,
                      name="openstack-cli",
                      title="OpenStack Client MCP Tool")
@@ -52,7 +64,7 @@ Things to remember when coding the tool:
 - The `ctx: Context` is not an MCP argument for the LLM but an argument we can optionally add that will make the MCP stack pass the request context to the method. Allows the code to access the lifespan variables, headers, send logging messages to the client, etc. Examples:
   * `ctx.request_context.request.headers`
   * `ctx.request_context.lifespan_context`
-  * `await ctx.debug(f"Debug: Processing '{data}'")`
+  * Use Python's `logging` module for logs; MCP context logging is deprecated in SDK v2.
 
 - Method must always be `async` and block as little as possible.
 
@@ -69,7 +81,7 @@ Things to remember when coding the tool:
 Example of a tool:
 
 ```python
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import Context
 from rhos_ls_mcps.logging import tool_logger
 
 @tool_logger

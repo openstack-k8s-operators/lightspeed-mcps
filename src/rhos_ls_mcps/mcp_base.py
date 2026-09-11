@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import argparse
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 
 class LifecycleConfigAbstract(ABC):
@@ -19,7 +19,7 @@ class LifecycleConfigAbstract(ABC):
 
     @staticmethod
     @abstractmethod
-    def add_tools(mcp: FastMCP) -> None:
+    def add_tools(mcp: MCPServer) -> None:
         """Add the module's MCP tools to the server."""
         # mcp.add_tool(method, name="toolname", title="short description")
         pass

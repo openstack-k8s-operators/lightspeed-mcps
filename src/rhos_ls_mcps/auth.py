@@ -37,7 +37,15 @@ class SecurityConfig:
     auth: AuthSettings | None = None
     token_verifier: TokenVerifier | None = None
     auth_server_provider: OAuthAuthorizationServerProvider | None = None
-    transport_security: TransportSecuritySettings | None = None
+
+
+def get_transport_security(config: Settings) -> TransportSecuritySettings:
+    """Get DNS rebinding protection settings for the HTTP transport."""
+    return TransportSecuritySettings(
+        enable_dns_rebinding_protection=config.mcp_transport_security.enable_dns_rebinding_protection,
+        allowed_hosts=config.mcp_transport_security.allowed_hosts,
+        allowed_origins=config.mcp_transport_security.allowed_origins,
+    )
 
 
 def get_auth_settings(config: Settings) -> SecurityConfig:
@@ -47,15 +55,12 @@ def get_auth_settings(config: Settings) -> SecurityConfig:
     """
 
     auth_server_provider = None
-    transport_security = TransportSecuritySettings(
-        enable_dns_rebinding_protection=config.mcp_transport_security.enable_dns_rebinding_protection,
-        allowed_hosts=config.mcp_transport_security.allowed_hosts,
-        allowed_origins=config.mcp_transport_security.allowed_origins,
-    )
     if config.mcp_transport_security.token:
         auth = AuthSettings(
             issuer_url=AnyHttpUrl("http://localhost:8080"),
             resource_server_url=AnyHttpUrl("http://localhost:8080"),
+            # StaticTokenVerifier checks an opaque shared token with no audience.
+            validate_token_resource=False,
         )
         token_verifier = StaticTokenVerifier(
             config.mcp_transport_security.token,
@@ -69,6 +74,5 @@ def get_auth_settings(config: Settings) -> SecurityConfig:
         auth=auth,
         token_verifier=token_verifier,
         auth_server_provider=auth_server_provider,
-        transport_security=transport_security,
     )
     return res
