@@ -51,7 +51,8 @@ def tool_logger(func: Callable[..., Any]) -> Callable[..., Any]:
         # ctx.request_id is always 2, so it's useless
         request_id = str(uuid4())
         if "ctx" in kwargs:
-            client_id = kwargs["ctx"].client_id or "-"
+            meta = kwargs["ctx"].request_context.meta
+            client_id = (meta or {}).get("client_id") or "-"
         else:
             client_id = "-"
         ctx.set(LoggerContext(request_id=request_id, client_id=client_id))

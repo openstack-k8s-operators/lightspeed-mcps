@@ -6,10 +6,11 @@ authors = [
     {name = "Gorka Eguileor", email = "geguileo@redhat.com"},
 ]
 dependencies = [
-    "mcp>=1.25.0",
+    "mcp>=2.2.0,<3",
     "openstackclient==4.0.0",
     "stevedore>=5.6.0",
     "pydantic>=2.12.5",
+    "pydantic-settings>=2.14.1",
     "kubernetes>=35.0.0",
     # To ensure it includes patch https://review.opendev.org/c/openstack/osc-lib/+/975784
     "python-openstackclient>=9.0.0"

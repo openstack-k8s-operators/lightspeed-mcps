@@ -5,7 +5,7 @@ import multiprocessing
 import os
 from typing import Any, Callable
 
-from mcp.server.fastmcp.exceptions import ToolError
+from mcp.server.mcpserver.exceptions import ToolError
 
 
 logger = logging.getLogger(__name__)
