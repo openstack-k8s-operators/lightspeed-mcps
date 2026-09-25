@@ -13,8 +13,13 @@ We create 2 different MCP routes: `/openstack/` and `/openshift/` and tools shou
 Run the test suite with the locked dependencies:
 
 ```bash
-uv run --locked python -m unittest discover -v
+uv run --locked coverage run -m unittest discover -v
+uv run --locked coverage report
 ```
+
+The coverage report enforces an 80% minimum and is run by the dedicated
+`Unit tests` GitHub Actions workflow. Pre-commit checks do not run the test
+suite.
 
 The HTTP tests cover both MCP endpoints with legacy and current protocol requests,
 including authentication, DNS protection, credential forwarding, and tool errors.

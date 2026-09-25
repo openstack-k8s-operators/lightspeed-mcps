@@ -21,6 +21,7 @@ license = {text = "Apache-2.0"}
 
 [dependency-groups]
 dev = [
+    "coverage>=7.13.0",
     "cliff>=4.14.0",
     "ruff>=0.15.14",
     "pre-commit>=4.6.0"
@@ -51,3 +52,11 @@ rhos-ls-mcps = "rhos_ls_mcps.main:main"
 
 [tool.ruff.lint]
 extend-select = ["S"]
+
+[tool.coverage.run]
+branch = true
+source = ["rhos_ls_mcps"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
