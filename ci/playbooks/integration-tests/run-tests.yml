@@ -1,0 +1,67 @@
+---
+# post_kuttl hook for lightspeed-mcps-integration-tests-crc: get the MCP
+# server image, export the OpenStack credentials from the openstackclient
+# pod, and run the integration suite from the repository checkout (the
+# documented developer flow from DEVELOPERS.md, real backend).
+#
+# The image comes from quay.io when the GitHub workflow already pushed one
+# for this exact commit (it tags and pushes <sha> on pushes to main);
+# otherwise it is built locally from the checkout.
+
+- name: Run the lightspeed-mcps integration tests
+  hosts: localhost
+  gather_facts: true
+  vars:
+    # zuul.projects[...].src_dir is relative to the zuul user's home, and the
+    # hook's ansible-playbook does not run with $HOME as cwd: make it absolute.
+    mcps_src: >-
+      {{ ansible_user_dir }}/{{ zuul.projects['github.com/openstack-k8s-operators/lightspeed-mcps'].src_dir }}
+    quay_image: >-
+      quay.io/openstack-lightspeed/lightspeed-mcps:{{ zuul.projects['github.com/openstack-k8s-operators/lightspeed-mcps'].checkout }}
+  tasks:
+    - name: Install uv
+      ansible.builtin.shell: |
+        set -euo pipefail
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+      args:
+        creates: "{{ ansible_user_dir }}/.local/bin/uv"
+
+    - name: Try the image the GitHub workflow pushes for this commit
+      ansible.builtin.command:
+        cmd: podman pull {{ quay_image }}
+      register: quay_pull
+      failed_when: false
+      changed_when: quay_pull.rc == 0
+
+    - name: Fetch the checksum-pinned build artifacts (oc tarballs)
+      when: quay_pull.rc != 0
+      ansible.builtin.command:
+        cmd: ./.s2i/get_artifacts.sh ./.s2i/artifacts.txt
+        chdir: "{{ mcps_src }}"
+
+    - name: Build the MCP server image
+      when: quay_pull.rc != 0
+      ansible.builtin.command:
+        cmd: podman build -t localhost/rhos-mcps-itest .
+        chdir: "{{ mcps_src }}"
+
+    - name: Export the OpenStack credentials from the openstackclient pod
+      ansible.builtin.command:
+        cmd: scripts/get-crc-creds.sh
+        chdir: "{{ mcps_src }}"
+      environment:
+        # crc and oc live in ~/.crc/bin
+        PATH: "{{ cifmw_path }}"
+        # oc needs the kubeconfig: nothing on the node creates ~/.kube/config
+        KUBECONFIG: "{{ cifmw_openshift_kubeconfig }}"
+
+    - name: Run the integration suite
+      ansible.builtin.command:
+        cmd: >-
+          {{ ansible_user_dir }}/.local/bin/uv run --locked
+          python -m unittest discover -s tests/integration -t . -v
+        chdir: "{{ mcps_src }}"
+      environment:
+        PATH: "{{ ansible_user_dir }}/.local/bin:{{ cifmw_path }}"
+        RHOS_MCPS_TEST_IMAGE: >-
+          {{ (quay_pull.rc == 0) | ternary(quay_image, 'localhost/rhos-mcps-itest') }}
