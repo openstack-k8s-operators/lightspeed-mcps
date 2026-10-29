@@ -98,8 +98,9 @@ Notes:
 - Building the image the first time is expensive (it wheels every locked
   dependency), but `podman build` caches the layers, so subsequent builds after
   code changes are fast.
-- A CI job reproduces the same steps (build image → provide backend → run
-  suite); wiring that workflow is a follow-up.
+- The build-and-push workflow runs this suite against the fake cluster after
+  building the image; its `run_integration_tests` and
+  `integration_tests_blocking` inputs configure skipping and blocking.
 - Known limitation: dynamic credentials (headers) and a `clouds.yaml` mounted
   in `/app` don't mix — openstacksdk auto-selects the single cloud and leaks
   its `auth_url` into the Token plugin. The dynamic-credentials test class
