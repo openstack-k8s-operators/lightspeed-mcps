@@ -29,6 +29,83 @@ requests, including authentication, DNS protection, credential forwarding, and
 tool errors. CLI execution is mocked, so these tests do not require a cluster or
 the `oc` binary.
 
+## Integration tests
+
+`tests/integration/` starts the MCP server in a container, connects a real MCP
+client to it, and exercises the tool scenarios (openstack-only read-only,
+openshift-only read-only, both read-only, both read-write, dynamic
+credentials). Each test class gets its own container configured for its
+scenario.
+
+The suite is strictly a **consumer**: building the image and providing the
+backend cluster are the developer's (or CI's) job, not part of the test code.
+Missing prerequisites fail fast with instructions instead of being provisioned.
+
+### Real backend (default)
+
+Against a CRC deployment, assuming the repo root as working directory:
+
+```bash
+scripts/get-crc-creds.sh          # clouds.yaml, secure.yaml, tls-ca-bundle.pem
+# kubeconfig is picked up from ~/.crc/machines/crc/kubeconfig
+./.s2i/get_artifacts.sh ./.s2i/artifacts.txt
+podman build -t localhost/rhos-mcps-itest .
+uv run --locked python -m unittest discover -s tests/integration -t . -v
+```
+
+**Warning**: the read-write class creates and deletes volumes and namespaces on
+the real cluster (uuid-suffixed names).  Every write is verified on the cluster
+itself and cleaned up with the raw `oc`/`openstack` CLIs run inside the server
+container via `podman exec`, never through the MCP under test.  When the
+kubeconfig authenticates with client certificates instead of a bearer token,
+the dynamic-credentials class also creates a short-lived read-only service
+account in the `openstack` namespace to mint its bearer token from, and removes
+it on teardown.
+
+### Fake backend
+
+No cluster needed. Terminal 1 — start the fake cluster (`--delay` makes the
+concurrency assertions meaningful):
+
+```bash
+uv run python -m tests.integration.fake_cluster \
+  --host 0.0.0.0 --port 0 --out-dir /tmp/fake-cluster \
+  --advertise-host host.containers.internal --delay 0.7
+```
+
+Terminal 2 — run the suite against it:
+
+```bash
+RHOS_MCPS_TEST_BACKEND=fake RHOS_MCPS_TEST_CREDS_DIR=/tmp/fake-cluster \
+  uv run --locked python -m unittest discover -s tests/integration -t . -v
+```
+
+`tests/integration/test_fake_cluster.py` is a self-check of the fake itself and
+is the only test allowed to start it.
+
+### Configuration (environment variables)
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `RHOS_MCPS_TEST_BACKEND` | `real` | `real` or `fake` |
+| `RHOS_MCPS_TEST_CREDS_DIR` | repo root | Dir with `clouds.yaml` + `secure.yaml` (+ optional `tls-ca-bundle.pem`): CRC outputs for real, the fake's `--out-dir` for fake |
+| `RHOS_MCPS_TEST_KUBECONFIG` | see order | Resolution order: env var → `<creds_dir>/kubeconfig` → `~/.crc/machines/crc/kubeconfig` |
+| `RHOS_MCPS_TEST_CLOUD` | unset | Optional cloud name, forwarded as `OS_CLOUD` into the container |
+| `RHOS_MCPS_TEST_IMAGE` | `localhost/rhos-mcps-itest` | Must already exist |
+
+Notes:
+
+- Building the image the first time is expensive (it wheels every locked
+  dependency), but `podman build` caches the layers, so subsequent builds after
+  code changes are fast.
+- A CI job reproduces the same steps (build image → provide backend → run
+  suite); wiring that workflow is a follow-up.
+- Known limitation: dynamic credentials (headers) and a `clouds.yaml` mounted
+  in `/app` don't mix — openstacksdk auto-selects the single cloud and leaks
+  its `auth_url` into the Token plugin. The dynamic-credentials test class
+  therefore mounts no static files, matching the README's dynamic-credentials
+  deployment.
+
 ## Configuration
 
 Configuration options for *all* the MCP tools are in the [`settings.py` file](./src/rhos_ls_mcps/settings.py).

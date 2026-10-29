@@ -152,9 +152,33 @@ class FakeClusterTests(unittest.TestCase):
         self.assertEqual(status, 201)
         self.assertEqual(payload["metadata"]["name"], "repro-x")
 
+        # Created namespaces are gettable and listed, like the seeded ones
+        for name in ("itest", "repro-x", "openstack"):
+            with self.subTest(namespace=name):
+                status, _, payload = self.request(f"/api/v1/namespaces/{name}")
+                self.assertEqual(status, 200)
+                self.assertEqual(payload["metadata"]["name"], name)
+
+        status, _, payload = self.request("/api/v1/namespaces")
+        listed = [ns["metadata"]["name"] for ns in payload["items"]]
+        for name in ("itest", "repro-x", "openstack"):
+            self.assertIn(name, listed)
+
+        status, _, payload = self.request("/api/v1/namespaces/missing")
+        self.assertEqual(status, 404)
+        self.assertEqual(payload["kind"], "Status")
+
         status, _, payload = self.request("/api/v1/namespaces/itest", method="DELETE")
         self.assertEqual(status, 200)
         self.assertEqual(payload["status"]["phase"], "Terminating")
+
+        status, _, _ = self.request("/api/v1/namespaces/itest")
+        self.assertEqual(status, 404)
+
+        # Deleting an unknown namespace fails like the real API
+        status, _, payload = self.request("/api/v1/namespaces/missing", method="DELETE")
+        self.assertEqual(status, 404)
+        self.assertEqual(payload["kind"], "Status")
 
     def test_volume_lifecycle(self):
         status, _, payload = self.request(

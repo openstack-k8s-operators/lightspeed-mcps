@@ -19,7 +19,8 @@ API on a single port (the paths don't collide):
   and enough of Cinder for `volume create`/`volume list`/`volume delete`.
 - Kube API: `/version`, `/api`, `/apis`, `/api/v1`, `get pod`,
   `cluster-info`'s kube-system services, `whoami`, `create namespace` and
-  `delete namespace`; anything else returns a 404 Status.
+  `delete namespace` (namespaces are tracked: gettable by name and listed);
+  anything else returns a 404 Status.
 
 It writes `clouds.yaml`, `secure.yaml`, `kubeconfig`, and `fake-cluster.pid`
 into `--out-dir`, all pointing at `https://<advertise-host>:<port>` so an MCP
@@ -328,11 +329,17 @@ def deleted_namespace(name: str) -> dict:
 
 
 class FakeClusterState:
-    """In-memory state for resources created through the fake Cinder API."""
+    """In-memory state for resources created through the fake APIs."""
 
     def __init__(self) -> None:
         self.lock = threading.Lock()
         self.volumes: dict[str, dict] = {}
+        # Seeded with the static namespaces so they are gettable like the
+        # created ones
+        self.namespaces: dict[str, dict] = {
+            namespace["metadata"]["name"]: namespace
+            for namespace in NAMESPACES["items"]
+        }
 
     def create_volume(self, body: bytes) -> dict:
         spec = json.loads(body).get("volume", {}) if body else {}
@@ -365,6 +372,26 @@ class FakeClusterState:
                 if key not in (id, volume["name"])
             }
         return {}
+
+    def create_namespace(self, body: bytes) -> dict:
+        namespace = create_namespace(body)
+        with self.lock:
+            self.namespaces[namespace["metadata"]["name"]] = namespace
+        return namespace
+
+    def get_namespace(self, name: str) -> dict | None:
+        with self.lock:
+            return self.namespaces.get(name)
+
+    def delete_namespace(self, name: str) -> dict | None:
+        """Terminating response, or None when the namespace doesn't exist."""
+        with self.lock:
+            existed = self.namespaces.pop(name, None) is not None
+        return deleted_namespace(name) if existed else None
+
+    def list_namespaces(self) -> dict:
+        with self.lock:
+            return {**NAMESPACES, "items": list(self.namespaces.values())}
 
 
 class FakeClusterHandler(BaseHTTPRequestHandler):
@@ -454,10 +481,19 @@ class FakeClusterHandler(BaseHTTPRequestHandler):
             return 200, [], SERVICES
         if path == "/api/v1/namespaces":
             if method == "POST":
-                return 201, [], create_namespace(body)
-            return 200, [], NAMESPACES
-        if method == "DELETE" and path.startswith("/api/v1/namespaces/"):
-            return 200, [], deleted_namespace(path.rsplit("/", 1)[1])
+                return 201, [], self.cluster.create_namespace(body)
+            return 200, [], self.cluster.list_namespaces()
+        if path.startswith("/api/v1/namespaces/"):
+            name = path.rsplit("/", 1)[1]
+            if method == "DELETE":
+                deleted = self.cluster.delete_namespace(name)
+                if deleted is None:
+                    return 404, [], kube_status(404, path)
+                return 200, [], deleted
+            namespace = self.cluster.get_namespace(name)
+            if namespace is None:
+                return 404, [], kube_status(404, path)
+            return 200, [], namespace
         if path.startswith(("/api", "/apis", "/version", "/openapi", "/metrics")):
             return 404, [], kube_status(404, path)
         # Unknown OpenStack-ish path: answer with the version document (the

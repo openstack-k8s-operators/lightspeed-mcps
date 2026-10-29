@@ -58,6 +58,15 @@ mcp_token = "rhos_ls_mcps.osp_auth:McpTokenLoader"
 [tool.ruff.lint]
 extend-select = ["S"]
 
+[tool.ruff.lint.per-file-ignores]
+# The integration suite is local dev/CI tooling that talks to its own servers
+"tests/integration/*" = [
+    "S104", # binding to 0.0.0.0 is the point of the fake cluster and containers
+    "S310", # the tests only talk to their own local servers
+    "S603", # subprocess calls run fixed, test-controlled commands
+    "S607", # partial executable paths (podman, openssl) are fine for dev tooling
+]
+
 [tool.coverage.run]
 branch = true
 source = ["rhos_ls_mcps"]
