@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = "==3.12.*"
 
 [[package]]
@@ -898,7 +898,7 @@ wheels = [
 
 [[package]]
 name = "osc-placement"
-version = "4.9.0"
+version = "4.9.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "keystoneauth1" },
@@ -906,9 +906,9 @@ dependencies = [
     { name = "oslo-utils" },
     { name = "pbr" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d8/07/c270489f3689a28c995e087cbf33be9d200f5b08c4069693c23515d128ea/osc_placement-4.9.0.tar.gz", hash = "sha256:a6af726eea0e2b2f93788f303931b988e8f9be08ce89cb7c16d0be6b486da1bc", size = 60374, upload-time = "2026-07-01T10:58:45.597Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/54/c9/4a0ed15fc1e67cfa81004ad87cf1d969647964d59d78a8808dba85280e88/osc_placement-4.9.1.tar.gz", hash = "sha256:56bd8134b482882531e87921513b45871aa7a988071ad1fbbf23fd68be3060c4", size = 60603, upload-time = "2026-08-28T09:08:49.135Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cc/ba/6fb5f9ecead96bdc279941f9c6b94cf6462bf1d41775a2c3be5dcc2eca2d/osc_placement-4.9.0-py3-none-any.whl", hash = "sha256:37b8604a96c1c6b7ebd2d2db728dac285df52d025022c0e6f521da4d2ad32fba", size = 65117, upload-time = "2026-07-01T10:58:44.445Z" },
+    { url = "https://files.pythonhosted.org/packages/8b/88/b281b21a1682bfd6719dc25bc359fe148332cd8694a0428217ea9fe46354/osc_placement-4.9.1-py3-none-any.whl", hash = "sha256:db248c39675e92595b1422a104fb6737a59826c971128096e9fc9fd88659c3d8", size = 65117, upload-time = "2026-08-28T09:08:48.147Z" },
 ]
 
 [[package]]
