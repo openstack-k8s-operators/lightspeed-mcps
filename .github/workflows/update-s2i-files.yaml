@@ -1,0 +1,22 @@
+name: Update S2I files
+
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-s2i-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
+
+      - name: Update S2I files
+        uses: ./.github/actions/update-s2i
+        with:
+          dependency_group: osc-plugins

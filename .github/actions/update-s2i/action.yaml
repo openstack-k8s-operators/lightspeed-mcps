@@ -1,0 +1,82 @@
+name: Update S2I
+description: Update the .s2i/requirements.lock and .s2i/sources.txt files
+
+inputs:
+  dependency_group:
+    description: Optional uv dependency group to include in the S2I requirements file.
+    required: false
+    default: ""
+  requirements_file:
+    description: Requirements output path, relative to the repository root.
+    required: false
+    default: .s2i/requirements.lock
+  sources_file:
+    description: S2I source definition path, relative to the repository root.
+    required: false
+    default: .s2i/sources.txt
+  stream:
+    description: Stream to select from sources.txt.
+    required: false
+    default: master
+  github_token:
+    description: Token used to push the update branch and create the pull request.
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  changed:
+    description: Whether the S2I requirements or sources changed.
+    value: ${{ steps.changes.outputs.changed }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      with:
+         python-version-file: 'pyproject.toml'
+
+    - name: Set up uv
+      uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+
+    - name: Update source pins
+      env:
+        S2I_SOURCES_FILE: ${{ inputs.sources_file }}
+        S2I_STREAM: ${{ inputs.stream }}
+      shell: bash
+      run: ${{ github.action_path }}/update-s2i.sh sources
+
+    - name: Update hashed S2I requirements
+      env:
+        S2I_DEPENDENCY_GROUP: ${{ inputs.dependency_group }}
+        S2I_REQUIREMENTS_FILE: ${{ inputs.requirements_file }}
+        S2I_SOURCES_FILE: ${{ inputs.sources_file }}
+        S2I_STREAM: ${{ inputs.stream }}
+      shell: bash
+      run: ${{ github.action_path }}/update-s2i.sh requirements
+
+    - name: Check for changes
+      id: changes
+      env:
+        REQUIREMENTS_FILE: ${{ inputs.requirements_file }}
+        SOURCES_FILE: ${{ inputs.sources_file }}
+      shell: bash
+      run: |
+        paths=("$REQUIREMENTS_FILE")
+        if [ -f "$SOURCES_FILE" ]; then
+          paths+=("$SOURCES_FILE")
+        fi
+        if git diff --quiet -- "${paths[@]}"; then
+          echo "changed=false" >> "$GITHUB_OUTPUT"
+        else
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Create or update pull request
+      if: steps.changes.outputs.changed == 'true'
+      env:
+        GH_TOKEN: ${{ inputs.github_token }}
+        REQUIREMENTS_FILE: ${{ inputs.requirements_file }}
+        SOURCES_FILE: ${{ inputs.sources_file }}
+      shell: bash
+      run: ${{ github.action_path }}/create-or-update-pr.sh
