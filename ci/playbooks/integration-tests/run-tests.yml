@@ -1,8 +1,9 @@
 ---
-# post_kuttl hook for lightspeed-mcps-integration-tests-crc: get the MCP
+# pre_end hook for lightspeed-mcps-integration-tests-crc: get the MCP
 # server image, export the OpenStack credentials from the openstackclient
 # pod, and run the integration suite from the repository checkout (the
-# documented developer flow from DEVELOPERS.md, real backend).
+# documented developer flow from DEVELOPERS.md, real backend). The control
+# plane has already been deployed by the parent job.
 #
 # The image comes from quay.io when the GitHub workflow already pushed one
 # for this exact commit (it tags and pushes <sha> on pushes to main);

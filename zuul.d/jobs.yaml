@@ -1,19 +1,18 @@
 ---
 # Integration tests of the MCP servers against a real deployment.
 #
-# The kuttl machinery inherited from cifmw-base-kuttl is reused only for its
-# bootstrap (tools download, openshift login/setup, CRC default-network
-# attach); the operator list is empty so no kuttl test runs, and both the
-# control plane deployment and the test suite are run as hooks.
+# The cifmw-crc-podified-edpm-deployment parent deploys the OpenStack
+# control plane on CRC (and would also deploy EDPM computes); the EDPM and
+# dataplane bits are disabled the same way cifmw-crc-podified-galera-
+# deployment does it, and the suite runs in a pre_end hook, after the
+# control plane is up and just before the success flag is set (so a test
+# failure also triggers the CRC logs and must-gather collection).
 - job:
     name: lightspeed-mcps-integration-tests-crc
-    parent: cifmw-base-kuttl
+    parent: cifmw-crc-podified-edpm-deployment
     description: >-
       Deploy the OpenStack control plane on CRC and run the
       tests/integration suite against the live cluster.
-    timeout: 10800
-    required-projects:
-      - github.com/openstack-k8s-operators/ci-framework
     files:
       - ^ci/playbooks/.*
       - ^zuul.d/.*
@@ -25,17 +24,34 @@
       - ^pyproject\.toml
       - ^uv\.lock
     vars:
-      cifmw_kuttl_tests_operator_list: []
-      # Stream the hooks' output to the job console instead of only
+      # Same disable set as cifmw-crc-podified-galera-deployment: no EDPM
+      # computes, no libvirt VMs, no tempest.
+      cifmw_deploy_edpm: false
+      cifmw_use_libvirt: false
+      podified_validation: true
+      cifmw_run_tests: false
+      # CRC is already installed and running when the run phase starts
+      # (the tenant's base-simple-crc pre-run starts it with its own
+      # pull-secret). nested_virt.yml's cifmw_use_crc: true would make
+      # rhol_crc try to deploy CRC itself and fail for lack of a
+      # pull-secret, so skip it like multinode-ci.yml does.
+      cifmw_use_crc: false
+      # ci_local_storage's SSH path can't reach the CRC VM (it is not an
+      # inventory host): create the PV dirs on it via the role's oc-debug
+      # fallback, the same cluster-side approach `make crc_storage` used in
+      # the kuttl flow.
+      cifmw_cls_oc_debug_fallback: true
+      # Single-hook parameter form, like pre_end_run_integration_tests
+      # below.
+      pre_infra_learn_ssh_host_keys:
+        type: playbook
+        source: "{{ ansible_user_dir }}/{{ zuul.projects['github.com/openstack-k8s-operators/lightspeed-mcps'].src_dir }}/ci/playbooks/integration-tests/ssh-known-hosts.yml"
+      # Stream the hook's output to the job console instead of only
       # collecting it as artifacts.
       cifmw_nolog: false
       # Single-hook parameter form (run_hook picks up vars matching
-      # ^<step>_(.*)$): the list form (pre_kuttl:/post_kuttl:) makes the role
-      # execute every hook twice - it gets the list both from the "hooks" var
-      # e2e-kuttl.yml passes and from its own read of the step-named var.
-      pre_kuttl_deploy_control_plane:
-        type: playbook
-        source: "{{ ansible_user_dir }}/{{ zuul.projects['github.com/openstack-k8s-operators/lightspeed-mcps'].src_dir }}/ci/playbooks/integration-tests/deploy-control-plane.yml"
-      post_kuttl_run_integration_tests:
+      # ^<step>_(.*)$); unlike the list form (pre_end: [...]) it cannot
+      # clobber a hook list defined by a ci-framework scenario file.
+      pre_end_run_integration_tests:
         type: playbook
         source: "{{ ansible_user_dir }}/{{ zuul.projects['github.com/openstack-k8s-operators/lightspeed-mcps'].src_dir }}/ci/playbooks/integration-tests/run-tests.yml"
