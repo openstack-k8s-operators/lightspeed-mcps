@@ -7,7 +7,9 @@
 - Uses the OpenStackClient (OSC) code as a libray to simulate running commands from the command line
 - Supported authentication mechanisms:
   * Config files on standard locations `clouds.yaml` and `secure.yaml`)
-  * `OS_TOKEN` and `OS_URL` passed as MCP request headers
+  * `OS_TOKEN` and `OS_URL` passed as MCP request headers (the service catalog
+    is fetched from `OS_URL` with the token and cached, so commands and version
+    discovery work as usual)
 - SSL:
   * Support configuring insecure mode (`--osc-insecure`)
   * Explicit local certificates (`--osc-ca-cert`)
@@ -80,7 +82,6 @@ DELETE_GLOBAL_ARGS: list[str] = [
     "--os-data-processing-url",
     "--os-username",
     "--os-password",
-    "--os-endpoint",
     "--os-trust-id",
     "--os-identity-provider",
     "--os-client-secret",
@@ -100,7 +101,6 @@ DELETE_GLOBAL_ARGS: list[str] = [
     "--os-idp-otp-key",
     "--os-realm-name",
     "--os-openid-client-id",
-    "--os-auth-type",
     "--os-oauth2-endpoint",
     "--os-oauth2-client-id",
     "--os-oauth2-client-secret",
@@ -114,7 +114,9 @@ DELETE_GLOBAL_ARGS: list[str] = [
 # we use them in the code.
 REJECT_GLOBAL_ARGS: list[str] = [
     "--os-auth-url",
+    "--os-auth-type",
     "--os-token",
+    "--os-endpoint",
     "--insecure",
     "--os-cacert",
 ]
@@ -499,6 +501,17 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
             mcp_argv + versions_varg, redirect=False
         )
         if response:
+            # Dynamic credentials (from request headers) fetch the catalog from
+            # the endpoint; if that fails (endpoint not Keystone, transient
+            # failure) `versions show` cannot work and would fail every call:
+            # skip the microversion defaults instead of raising.
+            # `--os-endpoint` is in REJECT_GLOBAL_ARGS, so users can't inject it.
+            if "--os-endpoint" in mcp_argv:
+                logger.debug(
+                    f"Skipping API version discovery, no catalog for "
+                    f"token+endpoint credentials ({response}):\n{stdout}\n{stderr}"
+                )
+                return
             raise ToolError(
                 f"Failed to get API versions ({response}):\n{stdout}\n{stderr}"
             )
@@ -605,7 +618,17 @@ def get_osp_credentials_args(ctx: Context) -> list[str]:
         logger.debug(
             f"Using token and URL from request headers for credentials: {url_header}"
         )
-        return ["--os-token", token_header, "--os-url", url_header]
+        # mcp_token keeps the token+endpoint behavior but fetches the service
+        # catalog from the endpoint (Keystone), so version discovery and
+        # per-service endpoints work like with static credentials
+        return [
+            "--os-auth-type",
+            "mcp_token",
+            "--os-token",
+            token_header,
+            "--os-endpoint",
+            url_header,
+        ]
 
     # Check that we actually have the credential files in a known location
     for config_dir in [

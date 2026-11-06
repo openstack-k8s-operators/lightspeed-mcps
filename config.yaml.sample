@@ -11,6 +11,10 @@ openstack:
   allow_write: false
   ca_cert: ./tls-ca-bundle.pem
   insecure: false
+  # Commands between service catalog refreshes for dynamic credentials
+  # (OS_TOKEN/OS_URL headers). The catalog is fetched from OS_URL and cached
+  # per worker process, and re-fetched after this many commands have used it.
+  catalog_refresh_commands: 100
   # Prometheus/Aetos (metric-storage) connection used by `openstack metric ...`.
   # Required on RHOSO 18, where metric-storage is not in the Keystone catalog and
   # cannot be auto-discovered. Omit on RHOSO 19+ (discovered from Keystone).

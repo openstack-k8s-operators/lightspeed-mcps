@@ -1,0 +1,17 @@
+---
+# pre_infra hook for lightspeed-mcps-integration-tests-crc.
+#
+# ci_local_storage (the edpm flow's storage-class setup) runs `hostname` on
+# every inventory host, delegating over SSH. The nested inventory holds
+# `controller` (the node's public IP) and the node has no known_hosts entry
+# for itself, so the delegation dies with "Host key verification failed".
+# Mirror the "Ensure we know ssh hosts" step of ci-framework's
+# edpm_baremetal_deployment/run.yml, which solves the same problem.
+- name: Learn the SSH host keys of the inventory hosts
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Ensure we know ssh hosts
+      ansible.builtin.shell:
+        cmd: "ssh-keyscan {{ hostvars[item].ansible_host }} >> ~/.ssh/known_hosts"
+      loop: "{{ hostvars.keys() | reject('equalto', 'localhost') }}"
