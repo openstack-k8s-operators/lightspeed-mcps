@@ -55,13 +55,25 @@
         # oc needs the kubeconfig: nothing on the node creates ~/.kube/config
         KUBECONFIG: "{{ cifmw_openshift_kubeconfig }}"
 
+    # shell (not command) so 2>&1 can fold stderr into stdout in write
+    # order: unittest writes all its per-test results to stderr, and
+    # Ansible captures the two streams as separate pipes that cannot be
+    # re-interleaved afterwards.
     - name: Run the integration suite
-      ansible.builtin.command:
-        cmd: >-
-          {{ ansible_user_dir }}/.local/bin/uv run --locked
-          python -m unittest discover -s tests/integration -t . -v
+      ansible.builtin.shell: >-
+        {{ ansible_user_dir }}/.local/bin/uv run --locked
+        python -m unittest discover -s tests/integration -t . -v 2>&1
+      args:
         chdir: "{{ mcps_src }}"
+      register: integration_suite
       environment:
         PATH: "{{ ansible_user_dir }}/.local/bin:{{ cifmw_path }}"
         RHOS_MCPS_TEST_IMAGE: >-
           {{ (quay_pull.rc == 0) | ternary(quay_image, 'localhost/rhos-mcps-itest') }}
+
+    # Ansible only prints a command's output when it fails; echo the
+    # per-test results of a successful run into the job log.
+    - name: Show the integration suite results
+      ansible.builtin.debug:
+        msg: "{{ item }}"
+      loop: "{{ integration_suite.stdout_lines }}"
