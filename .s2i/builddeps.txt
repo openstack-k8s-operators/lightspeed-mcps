@@ -1,4 +1,5 @@
 tar
+gzip
 gcc
 python3-devel
 python3-pip
