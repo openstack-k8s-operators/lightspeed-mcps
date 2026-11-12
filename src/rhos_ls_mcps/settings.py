@@ -50,6 +50,10 @@ class OpenStackSettings(BaseSettings):
         default=PrometheusSettings(),
         description="Prometheus/Aetos (metric-storage) settings for the observabilityclient",
     )
+    catalog_refresh_commands: int = Field(
+        default=100,
+        description="Commands between service catalog refreshes for dynamic credentials",
+    )
 
 
 class OpenShiftSettings(BaseSettings):

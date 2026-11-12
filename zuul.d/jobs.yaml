@@ -1,0 +1,41 @@
+---
+# Integration tests of the MCP servers against a real deployment.
+#
+# The kuttl machinery inherited from cifmw-base-kuttl is reused only for its
+# bootstrap (tools download, openshift login/setup, CRC default-network
+# attach); the operator list is empty so no kuttl test runs, and both the
+# control plane deployment and the test suite are run as hooks.
+- job:
+    name: lightspeed-mcps-integration-tests-crc
+    parent: cifmw-base-kuttl
+    description: >-
+      Deploy the OpenStack control plane on CRC and run the
+      tests/integration suite against the live cluster.
+    timeout: 10800
+    required-projects:
+      - github.com/openstack-k8s-operators/ci-framework
+    files:
+      - ^ci/playbooks/.*
+      - ^zuul.d/.*
+      - ^src/.*
+      - ^tests/integration/.*
+      - ^scripts/.*
+      - ^\.s2i/.*
+      - ^Containerfile
+      - ^pyproject\.toml
+      - ^uv\.lock
+    vars:
+      cifmw_kuttl_tests_operator_list: []
+      # Stream the hooks' output to the job console instead of only
+      # collecting it as artifacts.
+      cifmw_nolog: false
+      # Single-hook parameter form (run_hook picks up vars matching
+      # ^<step>_(.*)$): the list form (pre_kuttl:/post_kuttl:) makes the role
+      # execute every hook twice - it gets the list both from the "hooks" var
+      # e2e-kuttl.yml passes and from its own read of the step-named var.
+      pre_kuttl_deploy_control_plane:
+        type: playbook
+        source: "{{ ansible_user_dir }}/{{ zuul.projects['github.com/openstack-k8s-operators/lightspeed-mcps'].src_dir }}/ci/playbooks/integration-tests/deploy-control-plane.yml"
+      post_kuttl_run_integration_tests:
+        type: playbook
+        source: "{{ ansible_user_dir }}/{{ zuul.projects['github.com/openstack-k8s-operators/lightspeed-mcps'].src_dir }}/ci/playbooks/integration-tests/run-tests.yml"

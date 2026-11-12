@@ -27,6 +27,8 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
       - name: Run unit tests with coverage
-        run: uv run --locked coverage run -m unittest discover -s tests -t . -v
+        run: |
+          uv run --locked coverage run -m unittest discover -s tests/unit -t . -v
+          uv run --locked coverage run --append -m unittest discover -s tests/component -t . -v
       - name: Enforce coverage threshold
         run: uv run --locked coverage report

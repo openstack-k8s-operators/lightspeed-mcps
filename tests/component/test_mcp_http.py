@@ -187,7 +187,14 @@ class MCPHTTPTests(unittest.IsolatedAsyncioTestCase):
                                 observed_clients[-1], "migration-test" if meta else "-"
                             )
         self.shell.assert_awaited_with(
-            ["--os-token", self.osp_token, "--os-url", self.credentials["OS_URL"]],
+            [
+                "--os-auth-type",
+                "mcp_token",
+                "--os-token",
+                self.osp_token,
+                "--os-endpoint",
+                self.credentials["OS_URL"],
+            ],
             ["server", "list"],
         )
         self.command.assert_awaited_with(

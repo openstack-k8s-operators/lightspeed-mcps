@@ -1,0 +1,49 @@
+---
+# Minimal OpenStack control plane for lightspeed-mcps-integration-tests-crc.
+#
+# The integration suite only needs keystone (project list, catalog, auth),
+# cinder (volume create/show, the block-storage catalog entry) and the
+# openstackclient pod (created by the control plane operator whenever
+# keystone is enabled). Deploying the full install_yamls sample exhausts the
+# single CRC node's memory (24G host / 20G VM): the second, cell1 rabbitmq
+# (2Gi request) ends up Unschedulable and the control plane never reaches
+# Ready. This CR is a subset of the collapsed_cell sample.
+apiVersion: core.openstack.org/v1beta1
+kind: OpenStackControlPlane
+metadata:
+  name: openstack
+  namespace: openstack
+spec:
+  secret: osp-secret
+  storageClass: local-storage
+  galera:
+    templates:
+      openstack:
+        storageRequest: 500Mi
+  rabbitmq:
+    templates:
+      rabbitmq:
+        replicas: 1
+  memcached:
+    templates:
+      memcached:
+        replicas: 1
+  keystone:
+    template:
+      databaseInstance: openstack
+      secret: osp-secret
+      notificationsBus:
+        cluster: rabbitmq
+  cinder:
+    template:
+      databaseInstance: openstack
+      secret: osp-secret
+      cinderAPI:
+        replicas: 1
+      cinderScheduler:
+        replicas: 1
+      cinderBackup:
+        replicas: 0 # backend needs to be configured
+      cinderVolumes:
+        volume1:
+          replicas: 0 # backend needs to be configured

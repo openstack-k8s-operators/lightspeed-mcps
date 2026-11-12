@@ -1,0 +1,9 @@
+---
+- project:
+    name: openstack-k8s-operators/lightspeed-mcps
+    default-branch: main
+    github-check-post-review:
+      jobs:
+        # Non-voting until it proves itself green.
+        - lightspeed-mcps-integration-tests-crc:
+            voting: false
