@@ -1,0 +1,35 @@
+name: Validate openstack-mcp commands
+
+# Regression-check that the latest LightSpeed MCP image exposes the same
+# openstackclient commands as the openstackclient S2I image.
+
+on:
+  schedule:
+    - cron: "0 0 * * 1"
+  workflow_dispatch:
+    inputs:
+      mcp_image:
+        description: "LightSpeed MCP image to test"
+        required: false
+        default: "quay.io/openstack-lightspeed/lightspeed-mcps:latest"
+      reference_image:
+        description: "Reference OpenStack client image"
+        required: false
+        default: "quay.io/openstack-s2i-containers/openstack-openstackclient:master-latest"
+
+env:
+  MCP_IMAGE: ${{ inputs.mcp_image || 'quay.io/openstack-lightspeed/lightspeed-mcps:latest' }}
+  REFERENCE_IMAGE: ${{ inputs.reference_image || 'quay.io/openstack-s2i-containers/openstack-openstackclient:master-latest' }}
+
+jobs:
+  validate-openstack-mcp-commands:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Compare OpenStack CLI commands
+        run: |
+          .github/scripts/validate-openstack-mcp-commands.sh "$MCP_IMAGE" "$REFERENCE_IMAGE"
