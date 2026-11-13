@@ -66,8 +66,8 @@ PROTOCOL_VERSION = "2025-11-25"
 # A real-cluster first call does real version discovery, be patient
 CALL_TIMEOUT = 120
 HEALTH_TIMEOUT = 30
-# Concurrency check: N parallel calls must beat 60% of the serial estimate
-CONCURRENCY_FACTOR = 0.6
+# Concurrency check: N parallel calls must beat 90% of the serial estimate
+CONCURRENCY_FACTOR = 0.9
 # Namespace of the service account the dynamic-credentials token is minted
 # for (the tests only read it); must match the namespaces they query
 DYNAMIC_SA_NAMESPACE = "openstack"
