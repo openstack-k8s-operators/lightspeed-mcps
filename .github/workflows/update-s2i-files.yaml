@@ -2,7 +2,8 @@ name: Update S2I files
 
 on:
   schedule:
-    - cron: "17 5 * * *"
+    # Weekly on Monday at 05:17 UTC
+    - cron: "17 5 * * 1"
   workflow_dispatch:
 
 permissions:
