@@ -6,11 +6,10 @@ endpoints work (admin_token has no catalog and routes everything to one URL).
 from typing import Any
 
 from keystoneauth1 import access, loading
-from keystoneauth1.identity import base as identity_base
 from keystoneauth1 import session as ks_session
+from keystoneauth1.identity import base as identity_base
 
 from rhos_ls_mcps import settings
-
 
 # Catalog cache indexed by endpoint. Command workers are forked once and then
 # serve many commands, so this dict lives for the worker's lifetime.

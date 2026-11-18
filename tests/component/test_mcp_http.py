@@ -1,16 +1,15 @@
 import asyncio
-from contextlib import asynccontextmanager
 import json
-from types import SimpleNamespace
 import unittest
+from contextlib import asynccontextmanager
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
 import httpx2
 
-from rhos_ls_mcps import main, oc, osc, settings, utils
 from rhos_ls_mcps import logging as mcp_logging
-
+from rhos_ls_mcps import main, oc, osc, settings, utils
 
 PROTOCOL_VERSIONS = ("2025-11-25", "2026-07-28")
 ENDPOINTS = (
@@ -51,13 +50,15 @@ class MCPHTTPTests(unittest.IsolatedAsyncioTestCase):
     @asynccontextmanager
     async def client(self):
         app = main.create_app()
-        async with app.app.router.lifespan_context(app.app):
-            async with httpx2.AsyncClient(
+        async with (
+            app.app.router.lifespan_context(app.app),
+            httpx2.AsyncClient(
                 transport=httpx2.ASGITransport(app=app),
                 base_url="http://mcp.example.test",
                 headers={"Accept": "application/json, text/event-stream"},
-            ) as client:
-                yield client
+            ) as client,
+        ):
+            yield client
 
     async def post(
         self,

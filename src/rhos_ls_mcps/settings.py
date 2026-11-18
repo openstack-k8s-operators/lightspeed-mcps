@@ -1,13 +1,11 @@
 import logging
 import os
-import yaml
-from typing import Optional
 
+import yaml
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings
 
 from rhos_ls_mcps import oc_defaults
-
 
 logger = logging.getLogger(__name__)
 
@@ -20,17 +18,17 @@ class PrometheusSettings(BaseSettings):
     RHOSO 19+, where the client discovers the endpoint from Keystone.
     """
 
-    host: Optional[str] = Field(
+    host: str | None = Field(
         default=None, description="Prometheus/Aetos host (Env: PROMETHEUS_HOST)"
     )
-    port: Optional[int] = Field(
+    port: int | None = Field(
         default=None, description="Prometheus/Aetos port (Env: PROMETHEUS_PORT)"
     )
-    ca_cert: Optional[str] = Field(
+    ca_cert: str | None = Field(
         default=None,
         description="CA cert bundle for Prometheus TLS (Env: PROMETHEUS_CA_CERT)",
     )
-    root_path: Optional[str] = Field(
+    root_path: str | None = Field(
         default=None, description="Prometheus root path (Env: PROMETHEUS_ROOT_PATH)"
     )
 
@@ -40,7 +38,7 @@ class OpenStackSettings(BaseSettings):
     allow_write: bool = Field(
         default=False, description="Allow write operations (default: false)"
     )
-    ca_cert: Optional[str] = Field(
+    ca_cert: str | None = Field(
         default=None, description="CA certificate bundle file (Env: OS_CACERT)"
     )
     insecure: bool = Field(
@@ -72,16 +70,16 @@ class OpenShiftSettings(BaseSettings):
 
 
 class TLSSettings(BaseSettings):
-    ssl_certfile: Optional[str] = Field(
+    ssl_certfile: str | None = Field(
         default=None, description="Path to SSL certificate file for incoming TLS"
     )
-    ssl_keyfile: Optional[str] = Field(
+    ssl_keyfile: str | None = Field(
         default=None, description="Path to SSL private key file for incoming TLS"
     )
-    ssl_keyfile_password: Optional[str] = Field(
+    ssl_keyfile_password: str | None = Field(
         default=None, description="Password for encrypted SSL key file"
     )
-    ssl_ca_certs: Optional[str] = Field(
+    ssl_ca_certs: str | None = Field(
         default=None,
         description="Path to CA certs file for client certificate verification (mutual TLS)",
     )
@@ -97,7 +95,7 @@ class TLSSettings(BaseSettings):
 
 
 class TransportSecuritySettings(BaseSettings):
-    token: Optional[str] = Field(
+    token: str | None = Field(
         default=os.environ.get("MCP_SECURITY_TOKEN"),
         description="Token to use for basic authentication (Env: MCP_SECURITY_TOKEN)",
     )

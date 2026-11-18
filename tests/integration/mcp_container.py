@@ -56,7 +56,6 @@ from rhos_ls_mcps.oc_defaults import (
     DEFAULT_BLOCKED_COMMANDS,
 )
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 OPENSTACK_PATH = "/openstack/"
 OPENSHIFT_PATH = "/openshift/"

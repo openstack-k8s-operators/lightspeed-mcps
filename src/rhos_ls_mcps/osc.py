@@ -23,26 +23,25 @@
 """
 
 import asyncio
-from importlib.metadata import entry_points, EntryPoint
 import io
 import json
 import logging
 import os
-import sys
 import shlex
-from typing import TYPE_CHECKING, Any, Callable, Optional
+import sys
+from collections.abc import Callable
+from importlib.metadata import EntryPoint, entry_points
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from cliff import interactive
 
+import openstackclient.shell as osc_shell
 from mcp.server.mcpserver import Context, MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
-import openstackclient.shell as osc_shell
 
-from rhos_ls_mcps import settings
+from rhos_ls_mcps import settings, utils
 from rhos_ls_mcps.logging import tool_logger
-from rhos_ls_mcps import utils
-
 
 logger = logging.getLogger(__name__)
 
@@ -285,14 +284,12 @@ async def openstack_cli_mcp_tool(command_str: str, ctx: Context) -> str:
         metric_storage_msg = _metric_storage_error(stderr)
         if metric_storage_msg:
             raise ToolError(metric_storage_msg)
-        raise ToolError(
-            "openstack failed with error code {}: {}".format(ret_value, result)
-        )
+        raise ToolError(f"openstack failed with error code {ret_value}: {result}")
 
     return stdout or stderr
 
 
-def _metric_storage_error(stderr: str) -> Optional[str]:
+def _metric_storage_error(stderr: str) -> str | None:
     """Return a clear message when the failure is a missing metric-storage config.
 
     The observabilityclient's own error points at Prometheus host/port, which
@@ -310,7 +307,7 @@ def _metric_storage_error(stderr: str) -> Optional[str]:
         "section (host/port/ca_cert) in the MCP config, or the PROMETHEUS_HOST / "
         "PROMETHEUS_PORT / PROMETHEUS_CA_CERT environment variables on the MCP server, "
         "or mount a prometheus.yaml under /etc/openstack. "
-        "Original error: {}".format(stderr.strip())
+        f"Original error: {stderr.strip()}"
     )
 
 
@@ -336,7 +333,7 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
         description: str | None = None,
         version: str | None = None,
         interactive_app_factory: type["interactive.InteractiveApp"] | None = None,
-        deferred_help: Optional[bool] = None,
+        deferred_help: bool | None = None,
     ) -> None:
         stderr: io.StringIO = io.StringIO()
         stdout: io.StringIO = io.StringIO()
@@ -740,7 +737,7 @@ class MyCommandManager(osc_shell.commandmanager.CommandManager):
     """Custom command manager to replace entry points for commands that are not allowed."""
 
     def __init__(self, *args, **kwargs):
-        self.stderr: Optional[io.StringIO] = kwargs.pop("stderr", None)
+        self.stderr: io.StringIO | None = kwargs.pop("stderr", None)
         if not self.stderr:
             raise ToolError("stderr is required to initialize the command manager")
         super().__init__(*args, **kwargs)
