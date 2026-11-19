@@ -462,6 +462,8 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
 
         await self.lock.acquire()
         try:
+            if self.initialized:  # another request initialized while we waited
+                return
             await self._initialize_api_versions(mcp_argv)
             await self._initialize_global_args(user_argv)
             MyOpenStackShell.initialized = True
@@ -498,9 +500,12 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
             mcp_argv: Argumments for credentials and certificates.
         """
         versions_varg = ["versions", "show", "--format", "json"]
-        # Run in this process to later on share the loaded plugins and commands with command runs
-        response, stdout, stderr = self._do_run(
-            mcp_argv + versions_varg, redirect=False
+        # Still run in this process so the command workers forked later inherit
+        # the loaded plugins/commands and the parser defaults, but off the
+        # event loop so the server keeps serving requests while discovery
+        # blocks on the network.
+        response, stdout, stderr = await asyncio.to_thread(
+            self._do_run, mcp_argv + versions_varg, redirect=False
         )
         if response:
             # Dynamic credentials (from request headers) fetch the catalog from
