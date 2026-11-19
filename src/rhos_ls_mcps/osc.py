@@ -29,6 +29,7 @@ import logging
 import os
 import shlex
 import sys
+import threading
 from collections.abc import Callable
 from importlib.metadata import EntryPoint, entry_points
 from typing import TYPE_CHECKING, Any
@@ -324,6 +325,10 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
     # Class variables shared by all instances
     original_ancestor: Callable | None = None
     initialized: bool = False
+    # A timed-out discovery keeps running in its thread; this serializes
+    # attempts so the next one waits for it instead of concurrently mutating
+    # the shared shell state.
+    _discovery_mutex = threading.Lock()
     # TODO: Figure out why we need to reload everytime otherwise the commands dissapear and we fail
     loaded_plugins: bool = False
     loaded_commands: bool = False
@@ -500,13 +505,25 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
             mcp_argv: Argumments for credentials and certificates.
         """
         versions_varg = ["versions", "show", "--format", "json"]
-        # Still run in this process so the command workers forked later inherit
-        # the loaded plugins/commands and the parser defaults, but off the
-        # event loop so the server keeps serving requests while discovery
-        # blocks on the network.
-        response, stdout, stderr = await asyncio.to_thread(
-            self._do_run, mcp_argv + versions_varg, redirect=False
-        )
+
+        def run_discovery() -> tuple[int, str, str]:
+            with MyOpenStackShell._discovery_mutex:
+                # Still run in this process so the command workers forked
+                # later inherit the loaded plugins/commands and the parser
+                # defaults, but off the event loop so the server keeps serving
+                # requests while discovery blocks on the network.
+                return self._do_run(mcp_argv + versions_varg, redirect=False)
+
+        timeout = settings.CONFIG.openstack.discovery_timeout or None
+        try:
+            response, stdout, stderr = await asyncio.wait_for(
+                asyncio.to_thread(run_discovery), timeout
+            )
+        except TimeoutError:
+            raise ToolError(
+                f"OpenStack API version discovery timed out after {timeout} "
+                "seconds; check that the OpenStack endpoint is reachable"
+            ) from None
         if response:
             # Dynamic credentials (from request headers) fetch the catalog from
             # the endpoint; if that fails (endpoint not Keystone, transient
