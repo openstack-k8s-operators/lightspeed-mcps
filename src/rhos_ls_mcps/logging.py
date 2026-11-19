@@ -11,13 +11,13 @@ from uuid import uuid4
 logger = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True)
 class LoggerContext:
     request_id: str = "-"
     client_id: str = "-"
 
 
-ctx: ContextVar[str] = ContextVar("ctx", default=LoggerContext())
+ctx: ContextVar[LoggerContext] = ContextVar("ctx", default=LoggerContext())
 
 
 class InjectFilter(logging.Filter):

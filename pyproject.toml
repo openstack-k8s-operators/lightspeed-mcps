@@ -69,6 +69,10 @@ extend-select = ["S"]
     "S607", # partial executable paths (podman, openssl) are fine for dev tooling
 ]
 
+[tool.ruff.lint.flake8-bugbear]
+# LoggerContext is a frozen dataclass, safe as a shared ContextVar default
+extend-immutable-calls = ["rhos_ls_mcps.logging.LoggerContext"]
+
 [tool.coverage.run]
 branch = true
 source = ["rhos_ls_mcps"]

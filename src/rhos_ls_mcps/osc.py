@@ -130,7 +130,7 @@ OSC_PARAMS: list[str] = []
 
 
 def initialize(mcp_osp: MCPServer):
-    global ALLOWED_COMMANDS, OSC_PARAMS
+    global ALLOWED_COMMANDS
 
     mcp_osp.add_tool(
         openstack_cli_mcp_tool,
@@ -358,11 +358,11 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
         self.__class__.__mro__[3].__init__ = lambda self, *args, **kwargs: (
             MyOpenStackShell.original_ancestor(
                 self,
+                *args,
                 stdout=kwargs.pop("stdout", None) or stdout,
                 stderr=kwargs.pop("stderr", None) or stderr,
                 interactive_app_factory=kwargs.pop("interactive_app_factory", None)
                 or interactive_app_factory,
-                *args,
                 **kwargs,
             )
         )
@@ -550,9 +550,11 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
         if redirect:
             old_stderr = sys.stderr
             sys.stderr = self.stderr
+        # OSC commands raise arbitrary exceptions (cliff even calls sys.exit());
+        # turn them into a (code, message) result instead of crashing the worker.
         try:
             return_code = super().run(cmd)
-        except (SystemExit, Exception) as e:
+        except (SystemExit, Exception) as e:  # noqa: BLE001
             return_code = getattr(e, "code", 1)
             msg = getattr(e, "msg", str(e))
             logger.debug(
