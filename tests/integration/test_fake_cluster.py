@@ -62,6 +62,7 @@ class FakeClusterTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.process.terminate()
         cls.process.wait(timeout=10)
+        cls.process.stdout.close()
 
     def request(self, path, method="GET", data=None, headers=None):
         request = urllib.request.Request(self.base_url + path, data=data, method=method)
