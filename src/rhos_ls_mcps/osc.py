@@ -134,7 +134,10 @@ def initialize(mcp_osp: MCPServer):
     global ALLOWED_COMMANDS, OSC_PARAMS
 
     mcp_osp.add_tool(
-        openstack_cli_mcp_tool, name="openstack-cli", title="OpenStack Client MCP Tool"
+        openstack_cli_mcp_tool,
+        name="openstack-cli",
+        title="OpenStack Client MCP Tool",
+        description=OSC_TOOL_DESCRIPTION,
     )
 
     if settings.CONFIG.openstack.ca_cert:
@@ -218,44 +221,46 @@ def get_installed_plugins():
     return ""
 
 
+OSC_TOOL_DESCRIPTION = f"""Run an OpenStackClient (OSC) CLI command
+
+Runs the `openstack` command as if it were run in a terminal.
+No need to provide credentials, they are already present.
+
+The `openstack` command replaces individual commands for example:
+- `cinder volume-list` is now `openstack volume list`
+- `glance image-list` is now `openstack image list`
+- `nova list` is now `openstack server list`
+
+DON'T EVER USE commands such as cinder, nova, glance. Use `openstack` instead.
+THIS IS NOT A SHELL don't use pipes
+
+A complete list of commands is available using the help commands:
+- Global options and supported commands: `openstack --help` or `--help`
+- Options for a specific command:
+  * `openstack <command> --help`
+  * `openstack help <command>`
+{get_installed_plugins()}
+
+Microversions default to latest version, can use older version with
+appropriate `--os-XXXX-api-version`parameter (eg:
+`--os-identity-api-version 3.26`)
+
+For specific format of the stdout result use
+`--format {{table,csv,json,value,yaml}}` (default: is table)
+
+Empty lists output depends on the format:
+- CSV: always have a headers line, when there are no elements that's the only line.
+- JSON: empty array []
+- Table: nothing
+
+Args:
+   command_str: String with the openstack command to run. May start with "openstack"
+                or not, but it will *NEVER* be cinder, nova, glance, etc.
+"""
+
+
 @tool_logger
 async def openstack_cli_mcp_tool(command_str: str, ctx: Context) -> str:
-    f"""Run an OpenStackClient (OSC) CLI command
-
-    Runs the `openstack` command as if it were run in a terminal.
-    No need to provide credentials, they are already present.
-
-    The `openstack` command replaces individual commands for example:
-    - `cinder volume-list` is now `openstack volume list`
-    - `glance image-list` is now `openstack image list`
-    - `nova list` is now `openstack server list`
-
-    DON'T EVER USE commands such as cinder, nova, glance. Use `openstack` instead.
-    THIS IS NOT A SHELL don't use pipes
-
-    A complete list of commands is available using the help commands:
-    - Global options and supported commands: `openstack --help` or `--help`
-    - Options for a specific command:
-      * `openstack <command> --help`
-      * `openstack help <command>`
-    {get_installed_plugins()}
-
-    Microversions default to latest version, can use older version with
-    appropriate `--os-XXXX-api-version`parameter (eg:
-    `--os-identity-api-version 3.26`)
-
-    For specific format of the stdout result use
-    `--format {{table,csv,json,value,yaml}}` (default: is table)
-
-    Empty lists output depends on the format:
-    - CSV: always have a headers line, when there are no elements that's the only line.
-    - JSON: empty array []
-    - Table: nothing
-
-    Args:
-       command_str: String with the openstack command to run. May start with "openstack"
-                    or not, but it will *NEVER* be cinder, nova, glance, etc.
-    """
     # TODO: Actually implement our own shell so we don't reload plugins and commands every time?
     #       https://github.com/openstack/python-openstackclient/blob/master/openstackclient/shell.py
     #       Which inherits from: https://github.com/openstack/osc-lib/blob/master/osc_lib/shell.py

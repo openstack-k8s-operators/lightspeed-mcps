@@ -141,6 +141,7 @@ class MCPHTTPTests(unittest.IsolatedAsyncioTestCase):
                         )
                         tools = self.result(response)["tools"]
                         self.assertEqual([tool["name"] for tool in tools], [tool_name])
+                        self.assertTrue(tools[0]["description"])
                         self.assertEqual(
                             tools[0]["inputSchema"]["required"], ["command_str"]
                         )
