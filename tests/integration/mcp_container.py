@@ -127,9 +127,14 @@ class McpIntegrationTest(unittest.IsolatedAsyncioTestCase):
                     DYNAMIC_SA_NAMESPACE,
                 ],
                 capture_output=True,
+                check=False,
             )
         if getattr(cls, "container", None):
-            subprocess.run(["podman", "rm", "-f", cls.container], capture_output=True)
+            subprocess.run(
+                ["podman", "rm", "-f", cls.container],
+                capture_output=True,
+                check=False,
+            )
         if getattr(cls, "tmp_dir", None):
             shutil.rmtree(cls.tmp_dir, ignore_errors=True)
 
@@ -149,8 +154,10 @@ class McpIntegrationTest(unittest.IsolatedAsyncioTestCase):
         if not shutil.which("podman"):
             raise AssertionError("podman is required to run the integration tests")
         if (
-            subprocess.run(["podman", "image", "exists", cls.image]).returncode
-            and subprocess.run(["podman", "pull", cls.image]).returncode
+            subprocess.run(
+                ["podman", "image", "exists", cls.image], check=False
+            ).returncode
+            and subprocess.run(["podman", "pull", cls.image], check=False).returncode
         ):
             raise AssertionError(
                 f"Container image {cls.image} does not exist. Build it first:\n"
@@ -263,21 +270,27 @@ class McpIntegrationTest(unittest.IsolatedAsyncioTestCase):
             if cls.os_cloud:
                 cmd += ["-e", f"OS_CLOUD={cls.os_cloud}"]
         cmd.append(cls.image)
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, check=False)
         if result.returncode:
             raise AssertionError(f"podman run failed:\n{result.stderr}")
 
     @classmethod
     def _dump_logs(cls):
         result = subprocess.run(
-            ["podman", "logs", cls.container], capture_output=True, text=True
+            ["podman", "logs", cls.container],
+            capture_output=True,
+            text=True,
+            check=False,
         )
         print(f"--- podman logs {cls.container} ---\n{result.stdout}{result.stderr}")
 
     @classmethod
     def _wait_for_health(cls):
         result = subprocess.run(
-            ["podman", "port", cls.container, "8080"], capture_output=True, text=True
+            ["podman", "port", cls.container, "8080"],
+            capture_output=True,
+            text=True,
+            check=False,
         )
         if result.returncode or not result.stdout.strip():
             cls._dump_logs()
@@ -531,6 +544,7 @@ class McpIntegrationTest(unittest.IsolatedAsyncioTestCase):
                 ["oc", "--kubeconfig", kubeconfig, *args],
                 capture_output=True,
                 text=True,
+                check=False,
             )
             if result.returncode:
                 raise AssertionError(

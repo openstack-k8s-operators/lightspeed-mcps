@@ -29,11 +29,11 @@ def initialize(config: settings.Settings) -> tuple[MCPServer | None, MCPServer |
 
     security_cfg: auth_module.SecurityConfig = auth_module.get_auth_settings(config)
 
-    security_kwargs = dict(
-        auth_server_provider=security_cfg.auth_server_provider,
-        auth=security_cfg.auth,
-        token_verifier=security_cfg.token_verifier,
-    )
+    security_kwargs = {
+        "auth_server_provider": security_cfg.auth_server_provider,
+        "auth": security_cfg.auth,
+        "token_verifier": security_cfg.token_verifier,
+    }
 
     mcp_osp = None
     mcp_ocp = None
@@ -71,11 +71,11 @@ def create_app():
     routes = []
     # Use stateless_http=True to support multiple workers, otherwise a
     # session can go to a different worker and it will fail.
-    transport_kwargs = dict(
-        stateless_http=True,
-        streamable_http_path="/",
-        transport_security=auth_module.get_transport_security(config),
-    )
+    transport_kwargs = {
+        "stateless_http": True,
+        "streamable_http_path": "/",
+        "transport_security": auth_module.get_transport_security(config),
+    }
     if mcp_osp:
         routes.append(
             Mount("/openstack", app=mcp_osp.streamable_http_app(**transport_kwargs))
