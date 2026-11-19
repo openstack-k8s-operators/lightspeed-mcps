@@ -567,7 +567,7 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
             stdout = self.stdout.getvalue()
             stderr = self.stderr.getvalue()
             self._clean_stds()
-            return return_code, stdout, stderr
+        return return_code, stdout, stderr
 
     async def run(
         self, mcp_argv: list[str], user_argv: list[str]
