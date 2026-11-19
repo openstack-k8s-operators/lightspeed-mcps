@@ -55,6 +55,56 @@
         # oc needs the kubeconfig: nothing on the node creates ~/.kube/config
         KUBECONFIG: "{{ cifmw_openshift_kubeconfig }}"
 
+    # One cinder-api httpd worker can be permanently poisoned on this
+    # deployment: the kubelet /healthcheck probes (initialDelay 5s) hit the
+    # pod while the mod_wsgi workers are still importing the WSGI app, and
+    # the concurrent script evaluation dies with "AttributeError: module
+    # 'networkx.utils' has no attribute 'configs'" — that worker then 500s
+    # every request forever (liveness never kills the pod: failures
+    # alternate with successes). Probe all workers and restart the pod
+    # until clean.
+    # TODO: remove this task once cinder-operator fixes the probe-vs-import
+    # race.
+    - name: Verify cinder-api serves on every httpd worker
+      ansible.builtin.shell: |
+        set -euo pipefail
+        for attempt in 1 2 3 4; do
+          healthy=true
+          for _ in $(seq 12); do
+            if ! oc -n openstack exec openstackclient -- openstack volume list -f value >/dev/null; then
+              healthy=false
+              break
+            fi
+          done
+          if $healthy; then
+            echo "cinder-api healthy on every httpd worker (attempt $attempt)"
+            exit 0
+          fi
+          if [ "$attempt" -lt 4 ]; then
+            echo "cinder-api serves 500s from a broken httpd worker, restarting (attempt $attempt)"
+            oc -n openstack rollout restart statefulset/cinder-api
+            oc -n openstack rollout status statefulset/cinder-api --timeout=10m
+            # Let the kubelet probes finish loading the WSGI app in every
+            # worker of the new pod before probing again
+            sleep 90
+          fi
+        done
+        echo "ERROR: cinder-api still has a broken httpd worker after 3 restarts"
+        oc -n openstack logs cinder-api-0 -c cinder-api --tail=200 || true
+        exit 1
+      register: cinder_api_check
+      # Only the restart path changes the cluster; the probes are read-only.
+      changed_when: "'broken httpd worker' in cinder_api_check.stdout"
+      environment:
+        PATH: "{{ cifmw_path }}"
+        KUBECONFIG: "{{ cifmw_openshift_kubeconfig }}"
+
+    # Ansible only prints a command's output when it fails; echo whether
+    # cinder-api was healthy on the first try or needed restarts.
+    - name: Show the cinder-api check outcome
+      ansible.builtin.debug:
+        msg: "{{ cinder_api_check.stdout_lines }}"
+
     # shell (not command) so 2>&1 can fold stderr into stdout in write
     # order: unittest writes all its per-test results to stderr, and
     # Ansible captures the two streams as separate pipes that cannot be
