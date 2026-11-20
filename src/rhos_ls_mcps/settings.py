@@ -52,6 +52,13 @@ class OpenStackSettings(BaseSettings):
         default=100,
         description="Commands between service catalog refreshes for dynamic credentials",
     )
+    discovery_timeout: float = Field(
+        default=60,
+        description=(
+            "Seconds to wait for API version discovery before failing the request "
+            "(0 = no timeout)"
+        ),
+    )
 
 
 class OpenShiftSettings(BaseSettings):

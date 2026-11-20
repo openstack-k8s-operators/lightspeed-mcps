@@ -25,6 +25,9 @@ openstack:
   #  port: 9090
   #  ca_cert: ./tls-ca-bundle.pem
   #  root_path: null
+  # Seconds to wait for the one-time API version discovery call (the first
+  # command after startup) before failing the request. 0 disables the timeout.
+  discovery_timeout: 60
 
 openshift:
   allow_write: false

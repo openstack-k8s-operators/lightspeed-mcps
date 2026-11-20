@@ -113,6 +113,7 @@ These go under the `openstack` key:
 - `ca_cert`: CA certificate bundle file location. Default `""`.
 - `insecure`: Whether to allow insecure SSL connections or not. Default `false`.
 - `catalog_refresh_commands`: Number of commands between service catalog refreshes for dynamic credentials (`OS_TOKEN`/`OS_URL` headers). The catalog is fetched from `OS_URL` (the Keystone v3 endpoint) and cached per worker process. Default `100`.
+- `discovery_timeout`: Seconds to wait for the one-time API version discovery call (the first command after startup) before failing the request, instead of hanging until the connection gives up. `0` disables the timeout. Default `60`.
 - `prometheus`: Prometheus/Aetos (metric-storage) connection used by `openstack metric ...` commands. Goes under the `openstack.prometheus` key with fields `host`, `port`, `ca_cert`, `root_path`. Required on **RHOSO 18**, where the `metric-storage` service is not registered in the Keystone catalog and cannot be auto-discovered; omit it on **RHOSO 19+**, where the observabilityclient discovers the endpoint from Keystone. The equivalent environment variables `PROMETHEUS_HOST`, `PROMETHEUS_PORT`, `PROMETHEUS_CA_CERT`, `PROMETHEUS_ROOT_PATH` override these values when set (a mounted `/etc/openstack/prometheus.yaml` also works).
 
   There are three ways to provide this configuration, and only one wins per field when more than one is set. Priority, highest to lowest:
