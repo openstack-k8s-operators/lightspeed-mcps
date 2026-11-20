@@ -23,7 +23,7 @@ class FakeClusterTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.out_dir = Path(tempfile.mkdtemp(prefix="fake-cluster-selfcheck-"))
-        cls.process = subprocess.Popen(  # noqa: S603 -- fixed argv, our own module
+        cls.process = subprocess.Popen(
             [
                 sys.executable,
                 "-m",
@@ -62,17 +62,14 @@ class FakeClusterTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.process.terminate()
         cls.process.wait(timeout=10)
+        cls.process.stdout.close()
 
     def request(self, path, method="GET", data=None, headers=None):
-        request = urllib.request.Request(  # noqa: S310 -- https to our fake cluster
-            self.base_url + path, data=data, method=method
-        )
+        request = urllib.request.Request(self.base_url + path, data=data, method=method)
         for name, value in (headers or {}).items():
             request.add_header(name, value)
         try:
-            response = urllib.request.urlopen(  # noqa: S310
-                request, context=self.context, timeout=10
-            )
+            response = urllib.request.urlopen(request, context=self.context, timeout=10)
         except urllib.error.HTTPError as error:
             response = error  # 4xx/5xx responses are valid fake answers
         status = getattr(response, "status", None) or response.code

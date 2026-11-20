@@ -23,26 +23,25 @@
 """
 
 import asyncio
-from importlib.metadata import entry_points, EntryPoint
 import io
 import json
 import logging
 import os
-import sys
 import shlex
-from typing import TYPE_CHECKING, Any, Callable, Optional
+import sys
+from collections.abc import Callable
+from importlib.metadata import EntryPoint, entry_points
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from cliff import interactive
 
+import openstackclient.shell as osc_shell
 from mcp.server.mcpserver import Context, MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
-import openstackclient.shell as osc_shell
 
-from rhos_ls_mcps import settings
+from rhos_ls_mcps import settings, utils
 from rhos_ls_mcps.logging import tool_logger
-from rhos_ls_mcps import utils
-
 
 logger = logging.getLogger(__name__)
 
@@ -131,10 +130,13 @@ OSC_PARAMS: list[str] = []
 
 
 def initialize(mcp_osp: MCPServer):
-    global ALLOWED_COMMANDS, OSC_PARAMS
+    global ALLOWED_COMMANDS
 
     mcp_osp.add_tool(
-        openstack_cli_mcp_tool, name="openstack-cli", title="OpenStack Client MCP Tool"
+        openstack_cli_mcp_tool,
+        name="openstack-cli",
+        title="OpenStack Client MCP Tool",
+        description=OSC_TOOL_DESCRIPTION,
     )
 
     if settings.CONFIG.openstack.ca_cert:
@@ -218,44 +220,46 @@ def get_installed_plugins():
     return ""
 
 
+OSC_TOOL_DESCRIPTION = f"""Run an OpenStackClient (OSC) CLI command
+
+Runs the `openstack` command as if it were run in a terminal.
+No need to provide credentials, they are already present.
+
+The `openstack` command replaces individual commands for example:
+- `cinder volume-list` is now `openstack volume list`
+- `glance image-list` is now `openstack image list`
+- `nova list` is now `openstack server list`
+
+DON'T EVER USE commands such as cinder, nova, glance. Use `openstack` instead.
+THIS IS NOT A SHELL don't use pipes
+
+A complete list of commands is available using the help commands:
+- Global options and supported commands: `openstack --help` or `--help`
+- Options for a specific command:
+  * `openstack <command> --help`
+  * `openstack help <command>`
+{get_installed_plugins()}
+
+Microversions default to latest version, can use older version with
+appropriate `--os-XXXX-api-version`parameter (eg:
+`--os-identity-api-version 3.26`)
+
+For specific format of the stdout result use
+`--format {{table,csv,json,value,yaml}}` (default: is table)
+
+Empty lists output depends on the format:
+- CSV: always have a headers line, when there are no elements that's the only line.
+- JSON: empty array []
+- Table: nothing
+
+Args:
+   command_str: String with the openstack command to run. May start with "openstack"
+                or not, but it will *NEVER* be cinder, nova, glance, etc.
+"""
+
+
 @tool_logger
 async def openstack_cli_mcp_tool(command_str: str, ctx: Context) -> str:
-    f"""Run an OpenStackClient (OSC) CLI command
-
-    Runs the `openstack` command as if it were run in a terminal.
-    No need to provide credentials, they are already present.
-
-    The `openstack` command replaces individual commands for example:
-    - `cinder volume-list` is now `openstack volume list`
-    - `glance image-list` is now `openstack image list`
-    - `nova list` is now `openstack server list`
-
-    DON'T EVER USE commands such as cinder, nova, glance. Use `openstack` instead.
-    THIS IS NOT A SHELL don't use pipes
-
-    A complete list of commands is available using the help commands:
-    - Global options and supported commands: `openstack --help` or `--help`
-    - Options for a specific command:
-      * `openstack <command> --help`
-      * `openstack help <command>`
-    {get_installed_plugins()}
-
-    Microversions default to latest version, can use older version with
-    appropriate `--os-XXXX-api-version`parameter (eg:
-    `--os-identity-api-version 3.26`)
-
-    For specific format of the stdout result use
-    `--format {{table,csv,json,value,yaml}}` (default: is table)
-
-    Empty lists output depends on the format:
-    - CSV: always have a headers line, when there are no elements that's the only line.
-    - JSON: empty array []
-    - Table: nothing
-
-    Args:
-       command_str: String with the openstack command to run. May start with "openstack"
-                    or not, but it will *NEVER* be cinder, nova, glance, etc.
-    """
     # TODO: Actually implement our own shell so we don't reload plugins and commands every time?
     #       https://github.com/openstack/python-openstackclient/blob/master/openstackclient/shell.py
     #       Which inherits from: https://github.com/openstack/osc-lib/blob/master/osc_lib/shell.py
@@ -280,14 +284,12 @@ async def openstack_cli_mcp_tool(command_str: str, ctx: Context) -> str:
         metric_storage_msg = _metric_storage_error(stderr)
         if metric_storage_msg:
             raise ToolError(metric_storage_msg)
-        raise ToolError(
-            "openstack failed with error code {}: {}".format(ret_value, result)
-        )
+        raise ToolError(f"openstack failed with error code {ret_value}: {result}")
 
     return stdout or stderr
 
 
-def _metric_storage_error(stderr: str) -> Optional[str]:
+def _metric_storage_error(stderr: str) -> str | None:
     """Return a clear message when the failure is a missing metric-storage config.
 
     The observabilityclient's own error points at Prometheus host/port, which
@@ -305,7 +307,7 @@ def _metric_storage_error(stderr: str) -> Optional[str]:
         "section (host/port/ca_cert) in the MCP config, or the PROMETHEUS_HOST / "
         "PROMETHEUS_PORT / PROMETHEUS_CA_CERT environment variables on the MCP server, "
         "or mount a prometheus.yaml under /etc/openstack. "
-        "Original error: {}".format(stderr.strip())
+        f"Original error: {stderr.strip()}"
     )
 
 
@@ -331,7 +333,7 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
         description: str | None = None,
         version: str | None = None,
         interactive_app_factory: type["interactive.InteractiveApp"] | None = None,
-        deferred_help: Optional[bool] = None,
+        deferred_help: bool | None = None,
     ) -> None:
         stderr: io.StringIO = io.StringIO()
         stdout: io.StringIO = io.StringIO()
@@ -356,11 +358,11 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
         self.__class__.__mro__[3].__init__ = lambda self, *args, **kwargs: (
             MyOpenStackShell.original_ancestor(
                 self,
+                *args,
                 stdout=kwargs.pop("stdout", None) or stdout,
                 stderr=kwargs.pop("stderr", None) or stderr,
                 interactive_app_factory=kwargs.pop("interactive_app_factory", None)
                 or interactive_app_factory,
-                *args,
                 **kwargs,
             )
         )
@@ -548,9 +550,11 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
         if redirect:
             old_stderr = sys.stderr
             sys.stderr = self.stderr
+        # OSC commands raise arbitrary exceptions (cliff even calls sys.exit());
+        # turn them into a (code, message) result instead of crashing the worker.
         try:
             return_code = super().run(cmd)
-        except (SystemExit, Exception) as e:
+        except (SystemExit, Exception) as e:  # noqa: BLE001
             return_code = getattr(e, "code", 1)
             msg = getattr(e, "msg", str(e))
             logger.debug(
@@ -562,7 +566,7 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
             stdout = self.stdout.getvalue()
             stderr = self.stderr.getvalue()
             self._clean_stds()
-            return return_code, stdout, stderr
+        return return_code, stdout, stderr
 
     async def run(
         self, mcp_argv: list[str], user_argv: list[str]
@@ -735,7 +739,7 @@ class MyCommandManager(osc_shell.commandmanager.CommandManager):
     """Custom command manager to replace entry points for commands that are not allowed."""
 
     def __init__(self, *args, **kwargs):
-        self.stderr: Optional[io.StringIO] = kwargs.pop("stderr", None)
+        self.stderr: io.StringIO | None = kwargs.pop("stderr", None)
         if not self.stderr:
             raise ToolError("stderr is required to initialize the command manager")
         super().__init__(*args, **kwargs)

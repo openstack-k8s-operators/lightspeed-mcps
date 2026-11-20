@@ -4,10 +4,8 @@ import shlex
 from mcp.server.mcpserver import Context, MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 
-from rhos_ls_mcps import settings
+from rhos_ls_mcps import settings, utils
 from rhos_ls_mcps.logging import tool_logger
-from rhos_ls_mcps import utils
-
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +41,7 @@ REJECT_GLOBAL_ARGS: list[str] = [
 
 
 def initialize(mcp_ocp: MCPServer):
-    global OC_PARAMS, MAX_ALLOW_COMMAND_WORDS, MAX_BLOCK_COMMAND_WORDS
+    global MAX_ALLOW_COMMAND_WORDS, MAX_BLOCK_COMMAND_WORDS
 
     mcp_ocp.add_tool(
         openshift_cli_mcp_tool, name="openshift-cli", title="OpenShift Client MCP Tool"

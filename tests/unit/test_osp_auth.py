@@ -5,7 +5,6 @@ from keystoneauth1 import access, loading
 
 from rhos_ls_mcps import osp_auth, settings
 
-
 VALIDATE_BODY = {
     "token": {
         "methods": ["token"],

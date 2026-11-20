@@ -126,6 +126,7 @@ The `initialize` signature is:
 ```python
 from mcp.server.mcpserver import MCPServer
 
+
 def initialize(mcp_osp: MCPServer, mcp_ocp: MCPServer):
     pass
 ```

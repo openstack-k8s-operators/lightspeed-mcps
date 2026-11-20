@@ -21,7 +21,7 @@ license = {text = "Apache-2.0"}
 dev = [
     "coverage>=7.13.0",
     "cliff>=4.14.0",
-    "ruff>=0.15.14",
+    "ruff==0.17.4",
     "pre-commit>=4.6.0"
 ]
 
@@ -68,6 +68,10 @@ extend-select = ["S"]
     "S603", # subprocess calls run fixed, test-controlled commands
     "S607", # partial executable paths (podman, openssl) are fine for dev tooling
 ]
+
+[tool.ruff.lint.flake8-bugbear]
+# LoggerContext is a frozen dataclass, safe as a shared ContextVar default
+extend-immutable-calls = ["rhos_ls_mcps.logging.LoggerContext"]
 
 [tool.coverage.run]
 branch = true

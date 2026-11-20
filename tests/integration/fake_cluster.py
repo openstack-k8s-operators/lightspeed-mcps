@@ -516,8 +516,8 @@ class FakeClusterHandler(BaseHTTPRequestHandler):
 def generate_cert(out_dir: Path) -> tuple[Path, Path]:
     cert = out_dir / "cert.pem"
     key = out_dir / "key.pem"
-    subprocess.run(  # noqa: S603 -- fixed argv
-        [  # noqa: S607 -- openssl resolved from PATH
+    subprocess.run(
+        [
             "openssl",
             "req",
             "-x509",
@@ -615,7 +615,7 @@ def main(argv: list[str] | None = None) -> None:
     server = ThreadingHTTPServer((args.host, args.port), FakeClusterHandler)
     port = server.server_address[1]
     advertise_host = args.advertise_host or (
-        "127.0.0.1" if args.host == "0.0.0.0" else args.host  # noqa: S104
+        "127.0.0.1" if args.host == "0.0.0.0" else args.host
     )
     base_url = f"https://{advertise_host}:{port}"
 
