@@ -1380,7 +1380,7 @@ wheels = [
 
 [[package]]
 name = "python-watcherclient"
-version = "4.11.0"
+version = "4.12.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cliff" },
@@ -1392,9 +1392,9 @@ dependencies = [
     { name = "pbr" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5e/bc/5160ff5dc2c6f3580bd71ed09ae37ed3680f074fb91826d03f33530d3ab6/python_watcherclient-4.11.0.tar.gz", hash = "sha256:ca9745bffbc6c46959a9166663cc01845a44029c93b51e79182db47339868535", size = 96916, upload-time = "2026-08-28T09:30:15.721Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/4d/7a/bec58ce385518372b440a8b4b1d7481a2ceb62656c393937ec8f538bdedc/python_watcherclient-4.12.0.tar.gz", hash = "sha256:1ead263ca7011fab338b459105a0dad799b0d43ad1ad9089108b4b29e43cc077", size = 96327, upload-time = "2026-11-18T11:39:04.03Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3e/c1/b674cf653770ea11013555541a12b254c014a6382b3e700970b805ab1c59/python_watcherclient-4.11.0-py3-none-any.whl", hash = "sha256:bd310861a396d70ebd21c5921fbcbf264c3839455c6fdbaa86dcae6c3a146e68", size = 141370, upload-time = "2026-08-28T09:30:14.577Z" },
+    { url = "https://files.pythonhosted.org/packages/65/f6/f0256737fc7cd54c0008f3f12a06656e7cfa03d942b5bd9b004eff69ac0a/python_watcherclient-4.12.0-py3-none-any.whl", hash = "sha256:5645803b33233e2e2f52a194216954e7d5daa437ecb2de15a4fa293b0954684a", size = 140810, upload-time = "2026-11-18T11:39:02.841Z" },
 ]
 
 [[package]]
@@ -1669,11 +1669,11 @@ wheels = [
 
 [[package]]
 name = "stevedore"
-version = "5.9.1"
+version = "5.10.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/db/a1/3b8ed9c1fc3aa6eebb57732d924ddaa0500ecc3b638d0454816320994383/stevedore-5.9.1.tar.gz", hash = "sha256:e97a2667923efda926e8713fde6a73616df68210a3cbc6f02b48967b676fd8bf", size = 518111, upload-time = "2026-08-20T15:25:14.754Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7a/ec/b628c3b1613fe9340de1c5daba957f5b152159ac350b6ce4ad3d2469f822/stevedore-5.10.0.tar.gz", hash = "sha256:6005f32c09dc3159802a61c04862770e439e32db22f6da78ba56e8a735466882", size = 520466, upload-time = "2026-11-12T11:47:05.38Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c5/97/bba6e7ec2f5498b9dcb7b1b6400086b80ae5a8ebaff4b25e8c8add75f439/stevedore-5.9.1-py3-none-any.whl", hash = "sha256:5c8ff3a9f336cc1a06ac0f597bc79d11a2f950bfd32e290ca56b5a301fafafbf", size = 54931, upload-time = "2026-08-20T15:25:13.602Z" },
+    { url = "https://files.pythonhosted.org/packages/10/78/918aaff2864a8829d061db40acb9da04c89e5c3a01d65932b34432ebd78b/stevedore-5.10.0-py3-none-any.whl", hash = "sha256:47c48dc09e75933106c1bba0a7690eef3b5acecdb807df6d47cc40b2532fa927", size = 56789, upload-time = "2026-11-12T11:47:04.273Z" },
 ]
 
 [[package]]
