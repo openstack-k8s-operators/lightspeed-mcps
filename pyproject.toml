@@ -21,7 +21,7 @@ license = {text = "Apache-2.0"}
 dev = [
     "coverage>=7.13.0",
     "cliff>=4.14.0",
-    "ruff==0.17.4",
+    "ruff==0.17.5",
     "pre-commit>=4.6.0"
 ]
 
