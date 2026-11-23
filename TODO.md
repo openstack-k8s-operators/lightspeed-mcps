@@ -5,7 +5,6 @@
 ### Features
 
 - Add tools to get OpenStack configuration
-- Update to latest MCP version
 
 ### Bug fixes
 
