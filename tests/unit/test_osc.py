@@ -1,5 +1,6 @@
 import asyncio
 import io
+import threading
 import unittest
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
@@ -222,6 +223,11 @@ class OpenStackShellHelperTests(unittest.TestCase):
 
 
 class OpenStackShellInitializationTests(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        super().setUp()
+        # _initialize_api_versions reads the discovery timeout from the config
+        self.enterContext(patch.object(settings, "CONFIG", settings.Settings()))
+
     async def test_marks_forbidden_global_options_with_fail_type(self):
         parser = MagicMock()
         parser._actions = [
@@ -281,6 +287,112 @@ class OpenStackShellInitializationTests(unittest.IsolatedAsyncioTestCase):
         await osc.MyOpenStackShell._initialize_parser(shell, ["a"], ["b"])
         shell._initialize_api_versions.assert_awaited_once_with(["a"])
         shell._initialize_global_args.assert_awaited_once_with(["b"])
+
+    async def test_version_discovery_runs_off_the_event_loop(self):
+        release = threading.Event()
+
+        def blocking_do_run(cmd, redirect=True):
+            if not release.wait(timeout=2):
+                # Only possible if discovery ran on the event loop: the
+                # release task below was never scheduled.
+                raise AssertionError("event loop blocked during version discovery")
+            return (
+                0,
+                '[{"Status":"CURRENT","Service Type":"identity","Max Microversion":"3.14","Version":null}]',
+                "",
+            )
+
+        parser = MagicMock()
+        shell = SimpleNamespace(
+            parser=parser,
+            _do_run=blocking_do_run,
+            _get_version_arg_name_from_service_type=(
+                osc.MyOpenStackShell._get_version_arg_name_from_service_type
+            ),
+        )
+
+        async def release_discovery():
+            await asyncio.sleep(0.05)  # only runs if the event loop is free
+            release.set()
+
+        await asyncio.gather(
+            osc.MyOpenStackShell._initialize_api_versions(shell, ["--os-token", "t"]),
+            release_discovery(),
+        )
+        parser.set_defaults.assert_called_once_with(os_identity_api_version="3")
+
+    async def test_concurrent_calls_initialize_only_once(self):
+        self.addCleanup(
+            setattr,
+            osc.MyOpenStackShell,
+            "initialized",
+            osc.MyOpenStackShell.initialized,
+        )
+        osc.MyOpenStackShell.initialized = False
+
+        calls = 0
+
+        async def fake_api_versions(mcp_argv):
+            nonlocal calls
+            calls += 1
+            await asyncio.sleep(0)  # let the second caller queue on the lock
+
+        shell = object.__new__(osc.MyOpenStackShell)
+        shell.lock = asyncio.Lock()
+        shell._initialize_api_versions = fake_api_versions
+        shell._initialize_global_args = AsyncMock()
+
+        await asyncio.gather(
+            osc.MyOpenStackShell._initialize_parser(shell, ["a"], ["b"]),
+            osc.MyOpenStackShell._initialize_parser(shell, ["a"], ["b"]),
+        )
+        self.assertEqual(calls, 1)
+        shell._initialize_global_args.assert_awaited_once()
+
+    async def test_discovery_timeout_raises_tool_error(self):
+        release = threading.Event()
+
+        def stuck_do_run(cmd, redirect=True):
+            release.wait(timeout=5)
+            return (0, "", "")
+
+        shell = SimpleNamespace(parser=MagicMock(), _do_run=stuck_do_run)
+        config = settings.Settings(openstack={"discovery_timeout": 0.2})
+        with (
+            patch.object(settings, "CONFIG", config),
+            self.assertRaisesRegex(ToolError, "timed out"),
+        ):
+            await osc.MyOpenStackShell._initialize_api_versions(shell, [])
+        release.set()  # let the still-running background thread finish
+
+    async def test_timed_out_discovery_does_not_overlap_next_attempt(self):
+        release = threading.Event()
+        calls = []
+
+        def slow_do_run(cmd, redirect=True):
+            calls.append(cmd)
+            release.wait(timeout=5)
+            return (1, "out", "err")
+
+        shell = SimpleNamespace(parser=MagicMock(), _do_run=slow_do_run)
+        config = settings.Settings(openstack={"discovery_timeout": 0.2})
+        with patch.object(settings, "CONFIG", config):
+            # First attempt times out while _do_run is still stuck
+            with self.assertRaisesRegex(ToolError, "timed out"):
+                await osc.MyOpenStackShell._initialize_api_versions(shell, [])
+
+            # The second attempt must queue behind the still-running first one
+            second = asyncio.create_task(
+                osc.MyOpenStackShell._initialize_api_versions(shell, [])
+            )
+            await asyncio.sleep(0.1)
+            self.assertEqual(len(calls), 1)
+
+            release.set()
+            with self.assertRaisesRegex(ToolError, "Failed to get API versions"):
+                await second
+            self.assertEqual(len(calls), 2)
+        release.set()
 
 
 class OpenStackShellAsyncExecutionTests(unittest.IsolatedAsyncioTestCase):
