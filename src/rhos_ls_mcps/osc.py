@@ -349,14 +349,6 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
         command_manager = MyCommandManager("openstack.cli", stderr=stderr)
         deferred_help = True if deferred_help is None else deferred_help
 
-        ##########
-        # TEMPORARY WORKAROUND FOR osc-lib BUG
-        #
-        # Workwaround is compatible with versions with and without bug.
-        # TODO: Can be removed once container uses version v4.4.0 with commit
-        #       https://github.com/openstack/osc-lib/commit/9054ed5da170945071f6ec960f18537d16b55a4e
-        #       Until then we monkey patch the great-grandparent class here:
-        #       MRO: [MyOpenStackShell, osc_shell.OpenStackShell, osc_lib.shell.OpenStackShell, cliff.app.App, ...]
         if MyOpenStackShell.original_ancestor is None:
             great_grandparent = self.__class__.__mro__[3]
             MyOpenStackShell.original_ancestor = great_grandparent.__init__
