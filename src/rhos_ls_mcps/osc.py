@@ -349,21 +349,6 @@ class MyOpenStackShell(osc_shell.OpenStackShell):
         command_manager = MyCommandManager("openstack.cli", stderr=stderr)
         deferred_help = True if deferred_help is None else deferred_help
 
-        if MyOpenStackShell.original_ancestor is None:
-            great_grandparent = self.__class__.__mro__[3]
-            MyOpenStackShell.original_ancestor = great_grandparent.__init__
-        self.__class__.__mro__[3].__init__ = lambda self, *args, **kwargs: (
-            MyOpenStackShell.original_ancestor(
-                self,
-                *args,
-                stdout=kwargs.pop("stdout", None) or stdout,
-                stderr=kwargs.pop("stderr", None) or stderr,
-                interactive_app_factory=kwargs.pop("interactive_app_factory", None)
-                or interactive_app_factory,
-                **kwargs,
-            )
-        )
-
         super(osc_shell.OpenStackShell, self).__init__(
             description=description,
             version=version,
