@@ -71,16 +71,6 @@ on:
           in your Containerfile.
         required: false
         type: string
-      run_integration_tests:
-        description: Run the integration test suite against the fake cluster after building the image.
-        required: false
-        type: boolean
-        default: true
-      integration_tests_blocking:
-        description: Fail the workflow when the integration tests fail; set to false to report the failure but let the workflow (and the push) continue.
-        required: false
-        type: boolean
-        default: true
     secrets:
       QUAY_USERNAME:
         description: Quay username used to publish the image.
@@ -150,12 +140,13 @@ jobs:
             ${{ env.CONTAINERFILE }}
 
       - name: Set up uv
-        if: ${{ toJSON(inputs.run_integration_tests) != 'false' }}
+        # The test suite only exists in this repository, so skip it when the
+        # workflow is called from another repository.
+        if: ${{ github.event_name != 'workflow_call' }}
         uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
 
       - name: Integration tests (fake cluster)
-        if: ${{ toJSON(inputs.run_integration_tests) != 'false' }}
-        continue-on-error: ${{ toJSON(inputs.integration_tests_blocking) == 'false' }}
+        if: ${{ github.event_name != 'workflow_call' }}
         env:
           RHOS_MCPS_TEST_IMAGE: ${{ steps.build_image.outputs.image-with-tag }}
         run: ./scripts/run-integration-tests.sh
