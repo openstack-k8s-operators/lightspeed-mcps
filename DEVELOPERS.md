@@ -99,8 +99,8 @@ Notes:
   dependency), but `podman build` caches the layers, so subsequent builds after
   code changes are fast.
 - The build-and-push workflow runs this suite against the fake cluster after
-  building the image, but only when triggered directly in this repository
-  (push, PR, or manual dispatch); repositories that call this workflow skip it.
+  building the image, but only when the run belongs to this repository; jobs
+  that call this workflow from another repository skip it.
 - Known limitation: dynamic credentials (headers) and a `clouds.yaml` mounted
   in `/app` don't mix — openstacksdk auto-selects the single cloud and leaks
   its `auth_url` into the Token plugin. The dynamic-credentials test class

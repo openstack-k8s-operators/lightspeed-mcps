@@ -140,13 +140,14 @@ jobs:
             ${{ env.CONTAINERFILE }}
 
       - name: Set up uv
-        # The test suite only exists in this repository, so skip it when the
-        # workflow is called from another repository.
-        if: ${{ github.event_name != 'workflow_call' }}
+        # The `github` context in a called workflow belongs to the caller (its
+        # event name flows through), so gate on the repository: the test suite
+        # only exists here. Update the name if this repo is renamed or moved.
+        if: ${{ github.repository == 'openstack-k8s-operators/lightspeed-mcps' }}
         uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
 
       - name: Integration tests (fake cluster)
-        if: ${{ github.event_name != 'workflow_call' }}
+        if: ${{ github.repository == 'openstack-k8s-operators/lightspeed-mcps' }}
         env:
           RHOS_MCPS_TEST_IMAGE: ${{ steps.build_image.outputs.image-with-tag }}
         run: ./scripts/run-integration-tests.sh
